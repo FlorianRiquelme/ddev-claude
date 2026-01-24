@@ -9,25 +9,26 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 
 ## Current Position
 
-Phase: 1 of 4 (Firewall Foundation)
-Plan: 3 of 3 in current phase
-Status: ✓ Phase 1 verified complete
-Last activity: 2026-01-24 — Phase 1 verified (9/9 must-haves)
+Phase: 2 of 4 (Configuration & Commands)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-01-24 — Completed 02-01-PLAN.md
 
-Progress: [██░░░░░░░░] 25%
+Progress: [███░░░░░░░] 33%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 1.7 min
-- Total execution time: 5 min
+- Total plans completed: 4
+- Average duration: 1.6 min
+- Total execution time: 6 min 25s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Firewall Foundation | 3 | 5 min | 1.7 min |
+| 2. Configuration & Commands | 1 | 1 min 25s | 1.4 min |
 
 *Updated after each plan completion*
 
@@ -67,6 +68,10 @@ Recent decisions affecting current work:
 - Graceful empty ipset handling: warn but don't fail - legitimate if no domains configured
 - Docker healthcheck integration: exit 0 on pass, exit 1 on fail
 
+**Plan 02-01 decisions:**
+- Three-tier whitelist merge: Default + global + project configs for layered customization
+- JSON format over text: Structured format enables validation, merging, and tooling
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -77,8 +82,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 07:30 UTC
-Stopped at: Phase 1 verified complete
+Last session: 2026-01-24 11:33 UTC
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
 
-Next action: `/gsd:discuss-phase 2` — gather context for Configuration & Commands
+Next action: Execute 02-02-PLAN.md (DDEV commands)
