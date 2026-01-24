@@ -5,30 +5,30 @@
 See: .planning/PROJECT.md (updated 2025-01-24)
 
 **Core value:** Enable `--dangerously-skip-permissions` with confidence — Claude can work autonomously without constant approval prompts, while network isolation prevents it from reaching arbitrary external endpoints.
-**Current focus:** Phase 2: Configuration & Commands
+**Current focus:** Phase 2 complete, ready for Phase 3
 
 ## Current Position
 
-Phase: 2 of 4 (Configuration & Commands)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-01-24 — Completed 02-04-PLAN.md (Interactive whitelist UI)
+Phase: 2 of 4 (Configuration & Commands) - COMPLETE
+Plan: 5 of 5 in current phase
+Status: Phase complete
+Last activity: 2026-01-24 — Completed 02-05-PLAN.md (/whitelist Claude skill)
 
-Progress: [████████░░] 87% (7/8 plans complete)
+Progress: [██████████] 100% (8/8 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: 1.8 min
-- Total execution time: 12 min 31s
+- Total execution time: 14 min 31s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Firewall Foundation | 3 | 5 min | 1.7 min |
-| 2. Configuration & Commands | 4 | 7 min 31s | 1.9 min |
+| 2. Configuration & Commands | 5 | 9 min 31s | 1.9 min |
 
 *Updated after each plan completion*
 
@@ -89,6 +89,11 @@ Recent decisions affecting current work:
 - IPs without reverse DNS shown separately with guidance
 - jq for JSON manipulation ensures valid output
 
+**Plan 02-05 decisions:**
+- Claude skills in claude/skills/{name}/SKILL.md with YAML frontmatter
+- user-invocable: true enables /command access
+- Skill provides full firewall context including hot reload timing
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -99,8 +104,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 11:42 UTC
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-01-24 11:47 UTC
+Stopped at: Completed 02-05-PLAN.md (Phase 2 complete)
 Resume file: None
 
-Next action: Execute 02-05-PLAN.md (final plan of phase 2)
+Next action: Begin Phase 3 (Integration & Testing)
