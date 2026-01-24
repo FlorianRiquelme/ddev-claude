@@ -10,25 +10,25 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 ## Current Position
 
 Phase: 2 of 4 (Configuration & Commands)
-Plan: 2 of 5 in current phase
+Plan: 3 of 5 in current phase
 Status: In progress
-Last activity: 2026-01-24 — Completed 02-02-PLAN.md (DDEV commands)
+Last activity: 2026-01-24 — Completed 02-03-PLAN.md (Hot reload)
 
-Progress: [██████░░░░] 62% (5/8 plans complete)
+Progress: [███████░░░] 75% (6/8 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+- Total plans completed: 6
 - Average duration: 1.9 min
-- Total execution time: 9 min 25s
+- Total execution time: 11 min 31s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Firewall Foundation | 3 | 5 min | 1.7 min |
-| 2. Configuration & Commands | 2 | 4 min 25s | 2.2 min |
+| 2. Configuration & Commands | 3 | 6 min 31s | 2.2 min |
 
 *Updated after each plan completion*
 
@@ -77,6 +77,12 @@ Recent decisions affecting current work:
 - "$@" for argument passing instead of $* (preserves spaces in args)
 - Whitelist command as skeleton - gum interactive UI comes in 02-04
 
+**Plan 02-03 decisions:**
+- 2-second debounce window handles editor save patterns (temp file + atomic rename)
+- Watch directories not files to catch atomic save events (moved_to)
+- JSON validation before reload prevents broken configs from clearing firewall
+- PID file singleton pattern prevents watcher duplication on restart
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -87,8 +93,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 12:33 UTC
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-01-24 11:38 UTC
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None
 
-Next action: Execute 02-03-PLAN.md (Claude skills)
+Next action: Execute 02-04-PLAN.md (Interactive whitelist UI)
