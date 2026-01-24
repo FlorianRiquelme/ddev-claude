@@ -1,0 +1,41 @@
+services:
+  claude:
+    build:
+      context: .ddev/claude
+      dockerfile: Dockerfile.claude
+    container_name: ddev-${DDEV_SITENAME}-claude
+
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+    entrypoint: ["/var/www/html/.ddev/claude/entrypoint.sh"]
+    command: ["tail", "-f", "/dev/null"]
+
+    volumes:
+      - type: bind
+        source: .
+        target: /var/www/html
+        consistency: cached
+      - ~/.claude:/home/.claude:rw
+
+    working_dir: /var/www/html
+
+    networks:
+      - default
+
+    healthcheck:
+      test: ["CMD-SHELL", "/var/www/html/.ddev/claude/healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+
+networks:
+  default:
+    name: ddev_default
+    external: true
