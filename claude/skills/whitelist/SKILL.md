@@ -15,6 +15,29 @@ You are running inside a ddev-claude container with a network firewall. Outbound
 - **Default domains:** `/var/www/html/.ddev/claude/config/default-whitelist.json`
 - **Hot reload:** Config changes apply automatically in 2-3 seconds
 
+## Detecting Firewall Blocks
+
+When network requests fail, check if the firewall blocked them:
+
+1. Look for "[ddev-claude] Network request BLOCKED" messages in the terminal
+2. Or check dmesg: `dmesg | grep FIREWALL-BLOCK | tail -5`
+3. Or run: `ddev claude:whitelist` to see blocked domains interactively
+
+Common symptoms of firewall blocks:
+- "Connection refused" errors
+- "Network unreachable" errors
+- Timeouts to external APIs
+- Package manager failures (composer, npm)
+
+When you see these errors, check for blocks before troubleshooting other causes.
+
+## Proactive Block Check
+
+Before attempting external requests, you can inform the user:
+
+"I'm about to access [domain]. If this fails, it might be blocked by the firewall.
+Check for '[ddev-claude] Network request BLOCKED' messages or run 'ddev claude:whitelist'."
+
 ## Detecting Blocked Requests
 
 When you see errors like:
