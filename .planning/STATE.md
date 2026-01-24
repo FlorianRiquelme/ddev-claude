@@ -108,7 +108,7 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 1. **Investigate MCP servers not working with ddev claude** (tooling) — v1 BLOCKER: MCP servers don't work in container, needs investigation
-2. **Install common dev tools in Claude container** (tooling) — gh, coderabbit-cli, etc. missing causes /doctor plugin errors
+2. **Install common dev tools in Claude container with auth passthrough** (tooling) — Tools missing AND auth state not passed; seamless experience needed
 3. **Create Claude skill for addon management** (tooling) — Skill to help manage ddev-claude addon
 4. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project
 
