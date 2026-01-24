@@ -1,0 +1,19 @@
+#!/bin/bash
+## Description: Run Claude CLI with firewall protection
+## Usage: claude [flags] [args]
+## Example: "ddev claude --help"
+## Example: "ddev claude --dangerously-skip-permissions"
+## Flags: [{"Name":"no-firewall","Usage":"Disable firewall (for building initial whitelist)"}]
+
+# This command runs on host and executes in claude container via ddev exec
+
+if [[ "$1" == "--no-firewall" ]]; then
+    shift
+    echo "[ddev-claude] Firewall disabled for this session"
+    echo "[ddev-claude] Run 'ddev claude:whitelist' after to add accessed domains"
+    # Temporarily disable firewall in container, use "$@" for proper argument passing
+    ddev exec -s claude bash -c "iptables -F OUTPUT && iptables -P OUTPUT ACCEPT && claude \"\$@\"" -- "$@"
+else
+    # Normal mode: firewall active
+    ddev exec -s claude claude "$@"
+fi
