@@ -31,10 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   5. Firewall rules persist across container restarts via ENTRYPOINT script
   6. Healthcheck verifies iptables rules are loaded and functional
   7. Blocked requests are logged with domain/IP for debugging
-**Plans:** TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 01-01: TBD during phase planning
+- [ ] 01-01-PLAN.md — DDEV addon skeleton with capabilities and Dockerfile
+- [ ] 01-02-PLAN.md — Core firewall scripts (entrypoint, domain resolution, whitelist)
+- [ ] 01-03-PLAN.md — Healthcheck validation and internal logging
 
 ### Phase 2: Configuration & Commands
 **Goal:** Users can configure domain whitelists and run Claude CLI through DDEV
@@ -97,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Firewall Foundation | 0/TBD | Not started | - |
+| 1. Firewall Foundation | 0/3 | Planned | - |
 | 2. Configuration & Commands | 0/TBD | Not started | - |
 | 3. Safety Warnings & Documentation | 0/TBD | Not started | - |
 | 4. Dynamic IP Refresh | 0/TBD | Not started | - |
