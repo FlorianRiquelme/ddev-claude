@@ -1,3 +1,4 @@
+#ddev-generated
 FROM debian:bookworm-slim
 
 # Install system packages in single layer

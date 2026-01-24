@@ -29,7 +29,7 @@ while IFS= read -r domain || [[ -n "$domain" ]]; do
     while IFS= read -r ip; do
       ipset add -exist whitelist_ips "$ip" timeout 3600
       log "Whitelisted: $domain -> $ip"
-      ((total_ips++))
+      ((++total_ips))
     done <<< "$ips"
   else
     warn "Could not resolve $domain (skipping)"
