@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 ## Current Position
 
 Phase: 1 of 4 (Firewall Foundation)
-Plan: 2 of 3 in current phase
-Status: In progress — Firewall scripts complete
-Last activity: 2026-01-24 — Completed 01-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete — Firewall foundation ready for testing
+Last activity: 2026-01-24 — Completed 01-03-PLAN.md
 
-Progress: [██░░░░░░░░] 20%
+Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 1.5 min
-- Total execution time: 3 min
+- Total plans completed: 3
+- Average duration: 1.7 min
+- Total execution time: 5 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Firewall Foundation | 2 | 3 min | 1.5 min |
+| 1. Firewall Foundation | 3 | 5 min | 1.7 min |
 
 *Updated after each plan completion*
 
@@ -61,6 +61,12 @@ Recent decisions affecting current work:
 - Rate-limited logging (2/sec) to prevent log flooding while maintaining visibility
 - Graceful domain resolution failure: warn and continue, don't fail entire firewall
 
+**Plan 01-03 decisions:**
+- Five-check validation: iptables rules count, DROP policy, ipset exists, ipset entries (warn only), functional blocking test
+- TEST-NET-2 (198.51.100.1) for blocking test - reserved IP that never routes
+- Graceful empty ipset handling: warn but don't fail - legitimate if no domains configured
+- Docker healthcheck integration: exit 0 on pass, exit 1 on fail
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -71,8 +77,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 07:10 UTC
-Stopped at: Completed 01-02-PLAN.md (Firewall scripts)
+Last session: 2026-01-24 07:15 UTC
+Stopped at: Completed 01-03-PLAN.md (Healthcheck validation)
 Resume file: None
 
-Next action: Execute 01-03-PLAN.md (Healthcheck & integration testing)
+Next action: Phase 1 complete. Ready for Phase 2 (Configuration & Commands) or integration testing
