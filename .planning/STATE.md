@@ -10,25 +10,25 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 ## Current Position
 
 Phase: 2 of 4 (Configuration & Commands)
-Plan: 1 of 3 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-01-24 — Completed 02-01-PLAN.md
+Last activity: 2026-01-24 — Completed 02-02-PLAN.md (DDEV commands)
 
-Progress: [███░░░░░░░] 33%
+Progress: [██████░░░░] 62% (5/8 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 1.6 min
-- Total execution time: 6 min 25s
+- Total plans completed: 5
+- Average duration: 1.9 min
+- Total execution time: 9 min 25s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Firewall Foundation | 3 | 5 min | 1.7 min |
-| 2. Configuration & Commands | 1 | 1 min 25s | 1.4 min |
+| 2. Configuration & Commands | 2 | 4 min 25s | 2.2 min |
 
 *Updated after each plan completion*
 
@@ -72,6 +72,11 @@ Recent decisions affecting current work:
 - Three-tier whitelist merge: Default + global + project configs for layered customization
 - JSON format over text: Structured format enables validation, merging, and tooling
 
+**Plan 02-02 decisions:**
+- Commands in commands/host/ since they run on host and exec into container
+- "$@" for argument passing instead of $* (preserves spaces in args)
+- Whitelist command as skeleton - gum interactive UI comes in 02-04
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -82,8 +87,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 11:33 UTC
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-01-24 12:33 UTC
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
 
-Next action: Execute 02-02-PLAN.md (DDEV commands)
+Next action: Execute 02-03-PLAN.md (Claude skills)
