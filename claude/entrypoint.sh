@@ -64,13 +64,19 @@ log "Set default policy to DROP"
 
 ip_count=$(ipset list whitelist_ips 2>/dev/null | grep -c "^[0-9]" || echo 0)
 log "Firewall initialized successfully ($ip_count IPs whitelisted)"
-log "To see blocked requests: dmesg | grep FIREWALL-BLOCK"
+log "If you see 'Network request BLOCKED' messages, run 'ddev claude:whitelist' or use /whitelist skill"
 
 # Start config file watcher in background
 log "Starting config file watcher..."
 "$SCRIPT_DIR/scripts/watch-config.sh" &
 WATCHER_PID=$!
 log "Config watcher started (PID $WATCHER_PID)"
+
+# Start user-friendly block notification monitor
+log "Starting block notification monitor..."
+"$SCRIPT_DIR/scripts/format-block-message.sh" &
+BLOCK_MONITOR_PID=$!
+log "Block monitor started (PID $BLOCK_MONITOR_PID)"
 
 # Execute command passed to entrypoint
 exec "$@"
