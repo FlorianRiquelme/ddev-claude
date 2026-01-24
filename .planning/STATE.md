@@ -107,7 +107,9 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
+1. **Investigate MCP servers not working with ddev claude** (tooling) — v1 BLOCKER: MCP servers don't work in container, needs investigation
+2. **Create Claude skill for addon management** (tooling) — Skill to help manage ddev-claude addon
+3. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project
 
 ### Blockers/Concerns
 
