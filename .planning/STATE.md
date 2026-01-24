@@ -47,6 +47,13 @@ Recent decisions affecting current work:
 - Guidance over enforcement for file rules: User mounts their own Claude config, we warn but don't manage
 - Global + per-project config: Teams need shared defaults, projects need overrides
 
+**From 01-01 execution:**
+- DDEV v1.24.10+ required for proper build context support
+- Pre-install validation ensures NET_ADMIN capability is supported
+- Idempotent removal actions for safe addon uninstallation
+- Entrypoint chaining pattern: firewall setup → DDEV entrypoint
+- Read-only mount of ~/.claude config for security
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -57,6 +64,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 roadmap creation
-Stopped at: Roadmap and state files created, ready for phase planning
+Last session: 2026-01-24 plan execution
+Stopped at: Completed 01-01-PLAN.md (DDEV addon skeleton with capabilities and tooling)
 Resume file: None
