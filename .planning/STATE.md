@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 ## Current Position
 
 Phase: 1 of 4 (Firewall Foundation)
-Plan: 0 of 3 in current phase
-Status: Replanning — architecture change to dedicated container
-Last activity: 2026-01-24 — UAT revealed web container approach breaks website
+Plan: 1 of 3 in current phase
+Status: In progress — DDEV addon skeleton complete
+Last activity: 2026-01-24 — Completed 01-01-PLAN.md
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 10%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0 (reset after architecture change)
-- Average duration: —
-- Total execution time: —
+- Total plans completed: 1
+- Average duration: 1 min
+- Total execution time: 1 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Firewall Foundation | 0 | — | — |
+| 1. Firewall Foundation | 1 | 1 min | 1 min |
 
 *Updated after each plan completion*
 
@@ -49,6 +49,12 @@ Recent decisions affecting current work:
 - Firewall on web container blocks website's own outbound traffic (composer, npm, etc.)
 - Architecture must isolate Claude from web container entirely
 
+**Plan 01-01 decisions:**
+- DDEV v1.24.10+ required for proper build context support
+- Claude container runs as root (iptables requirement)
+- ~/.claude mounted to /home/.claude for config persistence
+- debian:bookworm-slim base matches DDEV web container OS
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -59,8 +65,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 UAT and architecture revision
-Stopped at: Phase 1 needs replanning with dedicated container architecture
+Last session: 2026-01-24 07:04 UTC
+Stopped at: Completed 01-01-PLAN.md (DDEV addon skeleton)
 Resume file: None
 
-Next action: `/gsd:plan-phase 1` to create new plans for dedicated claude container
+Next action: Execute 01-02-PLAN.md (Firewall scripts)
