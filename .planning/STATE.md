@@ -10,25 +10,25 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 ## Current Position
 
 Phase: 2 of 4 (Configuration & Commands) - COMPLETE
-Plan: 5 of 5 in current phase
+Plan: 7 of 7 in current phase
 Status: Phase complete
-Last activity: 2026-01-24 — Completed 02-05-PLAN.md (/whitelist Claude skill)
+Last activity: 2026-01-24 — Completed 02-07-PLAN.md (User-friendly block notifications)
 
-Progress: [██████████] 100% (8/8 plans complete)
+Progress: [██████████] 100% (10/10 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 1.8 min
-- Total execution time: 14 min 31s
+- Total plans completed: 10
+- Average duration: 1.7 min
+- Total execution time: 16 min 50s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Firewall Foundation | 3 | 5 min | 1.7 min |
-| 2. Configuration & Commands | 5 | 9 min 31s | 1.9 min |
+| 2. Configuration & Commands | 7 | 11 min 50s | 1.7 min |
 
 *Updated after each plan completion*
 
@@ -94,6 +94,11 @@ Recent decisions affecting current work:
 - user-invocable: true enables /command access
 - Skill provides full firewall context including hot reload timing
 
+**Plan 02-07 decisions:**
+- dmesg -w for real-time monitoring instead of polling
+- Reverse DNS with timeout for better UX (show domains not just IPs)
+- Deduplication via /tmp state file prevents message spam
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -104,8 +109,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 11:47 UTC
-Stopped at: Completed 02-05-PLAN.md (Phase 2 complete)
+Last session: 2026-01-24 13:00 UTC
+Stopped at: Completed 02-07-PLAN.md (User-friendly block notifications - gap closure complete)
 Resume file: None
 
 Next action: Begin Phase 3 (Integration & Testing)
