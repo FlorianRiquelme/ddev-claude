@@ -57,14 +57,16 @@ Plans:
   10. `/whitelist` Claude skill provides firewall awareness and guides users through whitelisting
   11. Claude can edit whitelist.json directly after asking user for confirmation
   12. Skill triggers hot reload after whitelist changes
-**Plans:** 5 plans in 4 waves
+**Plans:** 7 plans in 4 waves (5 original + 2 gap closure)
 
 Plans:
-- [ ] 02-01-PLAN.md — Configuration infrastructure (Dockerfile tools, merge script, default whitelist, stack templates)
-- [ ] 02-02-PLAN.md — DDEV commands skeleton (ddev claude, ddev claude:whitelist)
-- [ ] 02-03-PLAN.md — Hot reload system (inotify watcher, reload script, entrypoint update)
-- [ ] 02-04-PLAN.md — Interactive whitelist management (gum UI, blocked domain parsing)
-- [ ] 02-05-PLAN.md — Claude /whitelist skill integration
+- [x] 02-01-PLAN.md — Configuration infrastructure (Dockerfile tools, merge script, default whitelist, stack templates)
+- [x] 02-02-PLAN.md — DDEV commands skeleton (ddev claude, ddev claude:whitelist)
+- [x] 02-03-PLAN.md — Hot reload system (inotify watcher, reload script, entrypoint update)
+- [x] 02-04-PLAN.md — Interactive whitelist management (gum UI, blocked domain parsing)
+- [x] 02-05-PLAN.md — Claude /whitelist skill integration
+- [ ] 02-06-PLAN.md — [GAP CLOSURE] --no-firewall domain logging
+- [ ] 02-07-PLAN.md — [GAP CLOSURE] User-friendly block error messages
 
 ### Phase 3: Safety Warnings & Documentation
 **Goal:** Users understand security boundaries and receive warnings for risky configurations
