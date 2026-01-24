@@ -45,8 +45,8 @@ Plans:
 **Depends on:** Phase 1
 **Requirements:** CONF-01, CONF-02, CONF-03, CONF-04, CONF-05, CONF-06, UI-01, UI-02, UI-03, UI-04, UI-05, SKILL-01, SKILL-02, SKILL-03
 **Success Criteria** (what must be TRUE):
-  1. Per-project whitelist config exists at `.ddev/ddev-claude/whitelist.txt` and is loaded on startup
-  2. Global whitelist config exists at `~/.ddev/ddev-claude/whitelist.txt` and merges with per-project config
+  1. Per-project whitelist config exists at `.ddev/ddev-claude/whitelist.json` and is loaded on startup
+  2. Global whitelist config exists at `~/.ddev/ddev-claude/whitelist.json` and merges with per-project config
   3. Default whitelist includes Claude API, GitHub, Composer, npm registries
   4. Stack templates available for common frameworks (Laravel, npm) to quickly configure whitelists
   5. `ddev claude [args]` command runs Claude CLI inside container with firewall active
@@ -55,12 +55,16 @@ Plans:
   8. Configuration changes reload without container restart (hot reload)
   9. Clear error messages appear when firewall blocks a request
   10. `/whitelist` Claude skill provides firewall awareness and guides users through whitelisting
-  11. Claude can edit whitelist.txt directly after asking user for confirmation
+  11. Claude can edit whitelist.json directly after asking user for confirmation
   12. Skill triggers hot reload after whitelist changes
-**Plans:** TBD
+**Plans:** 5 plans in 4 waves
 
 Plans:
-- [ ] 02-01: TBD during phase planning
+- [ ] 02-01-PLAN.md — Configuration infrastructure (Dockerfile tools, merge script, default whitelist, stack templates)
+- [ ] 02-02-PLAN.md — DDEV commands skeleton (ddev claude, ddev claude:whitelist)
+- [ ] 02-03-PLAN.md — Hot reload system (inotify watcher, reload script, entrypoint update)
+- [ ] 02-04-PLAN.md — Interactive whitelist management (gum UI, blocked domain parsing)
+- [ ] 02-05-PLAN.md — Claude /whitelist skill integration
 
 ### Phase 3: Safety Warnings & Documentation
 **Goal:** Users understand security boundaries and receive warnings for risky configurations
@@ -102,6 +106,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Firewall Foundation | 3/3 | ✓ Complete | 2026-01-24 |
-| 2. Configuration & Commands | 0/TBD | Not started | - |
+| 2. Configuration & Commands | 0/5 | Not started | - |
 | 3. Safety Warnings & Documentation | 0/TBD | Not started | - |
 | 4. Dynamic IP Refresh | 0/TBD | Not started | - |
