@@ -33,10 +33,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   7. Firewall rules persist across container restarts via ENTRYPOINT script
   8. Healthcheck verifies iptables rules are loaded and functional
   9. Web container remains completely unchanged (no firewall, no capability changes)
-**Plans:** TBD (replanning required)
+**Plans:** 3 plans in 3 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — DDEV addon skeleton with dedicated claude container
+- [ ] 01-01-PLAN.md — DDEV addon skeleton with dedicated claude container (Dockerfile, docker-compose, install.yaml)
 - [ ] 01-02-PLAN.md — Core firewall scripts (entrypoint, domain resolution, whitelist)
 - [ ] 01-03-PLAN.md — Healthcheck validation and logging
 
@@ -101,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Firewall Foundation | 0/3 | Replanning (architecture change) | - |
+| 1. Firewall Foundation | 0/3 | Planned (dedicated container architecture) | - |
 | 2. Configuration & Commands | 0/TBD | Not started | - |
 | 3. Safety Warnings & Documentation | 0/TBD | Not started | - |
 | 4. Dynamic IP Refresh | 0/TBD | Not started | - |
