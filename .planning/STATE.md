@@ -57,6 +57,7 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
+2. **Create Claude skill for addon management** (tooling) — Interactive commands like `/ddev-claude allow <domain>` so users don't manually edit configs
 
 ### Blockers/Concerns
 
