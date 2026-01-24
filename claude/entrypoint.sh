@@ -1,0 +1,67 @@
+#!/bin/bash
+set -euo pipefail
+
+LOG_PREFIX="[ddev-claude]"
+SCRIPT_DIR="/var/www/html/.ddev/claude"
+WHITELIST_FILE="$SCRIPT_DIR/whitelist-domains.txt"
+BLOCKED_LOG="/tmp/ddev-claude-blocked.log"
+
+log() { echo "$LOG_PREFIX $*"; }
+error() { echo "$LOG_PREFIX ERROR: $*" >&2; }
+
+# Error trap - fail closed
+trap 'error "Firewall initialization failed - blocking all traffic"; exit 1' ERR
+
+log "Initializing firewall rules..."
+
+# Initialize blocked log file (for Phase 2 whitelist suggestions)
+> "$BLOCKED_LOG"
+log "Initialized blocked request log at $BLOCKED_LOG"
+
+# 1. Flush existing rules (idempotent)
+iptables -F OUTPUT 2>/dev/null || true
+iptables -P OUTPUT ACCEPT  # Temporarily allow while setting up
+
+# 2. Create ipset (use -exist for idempotency)
+ipset create -exist whitelist_ips hash:ip timeout 3600
+log "Created ipset 'whitelist_ips'"
+
+# 3. Allow loopback (critical for localhost communication)
+iptables -A OUTPUT -o lo -j ACCEPT
+log "Allowed loopback interface"
+
+# 4. Allow DNS BEFORE restrictive rules (UDP and TCP)
+iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+iptables -A OUTPUT -p tcp --dport 53 -j ACCEPT
+log "Allowed DNS resolution (port 53)"
+
+# 5. Allow established connections (return traffic)
+iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+log "Allowed established/related connections"
+
+# 6. Resolve domains and populate ipset
+if [[ -f "$WHITELIST_FILE" ]]; then
+  "$SCRIPT_DIR/resolve-and-apply.sh" "$WHITELIST_FILE"
+else
+  log "WARNING: Whitelist file not found at $WHITELIST_FILE"
+fi
+
+# 7. Allow traffic to whitelisted IPs
+iptables -A OUTPUT -m set --match-set whitelist_ips dst -j ACCEPT
+log "Allowed whitelisted IPs"
+
+# 8. Log blocked requests (rate limited for visible logs)
+# Phase 2 will parse kernel log for whitelist suggestions
+iptables -A OUTPUT -m limit --limit 2/sec --limit-burst 5 \
+  -j LOG --log-prefix "[FIREWALL-BLOCK] " --log-level warning
+
+# 9. Default DROP (fail closed)
+iptables -P OUTPUT DROP
+log "Set default policy to DROP"
+
+ip_count=$(ipset list whitelist_ips 2>/dev/null | grep -c "^[0-9]" || echo 0)
+log "Firewall initialized successfully ($ip_count IPs whitelisted)"
+log "To see blocked requests: dmesg | grep FIREWALL-BLOCK"
+
+# Execute command passed to entrypoint
+exec "$@"
