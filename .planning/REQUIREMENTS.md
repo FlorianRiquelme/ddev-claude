@@ -33,6 +33,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **UI-04**: Interactive selection in `claude:whitelist` to add domains to whitelist
 - [ ] **UI-05**: Clear error messaging when requests are blocked
 
+### Claude Skill
+
+- [ ] **SKILL-01**: `/whitelist` skill provides Claude with firewall awareness and context
+- [ ] **SKILL-02**: Skill enables Claude to edit whitelist.txt directly (asks user first)
+- [ ] **SKILL-03**: Skill triggers hot reload after whitelist changes
+
 ### Safety
 
 - [ ] **SAFE-01**: Startup detects additional mounted directories beyond project root
@@ -88,42 +94,45 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIRE-01 | TBD | Pending |
-| FIRE-02 | TBD | Pending |
-| FIRE-03 | TBD | Pending |
-| FIRE-04 | TBD | Pending |
-| FIRE-05 | TBD | Pending |
-| FIRE-06 | TBD | Pending |
-| CONF-01 | TBD | Pending |
-| CONF-02 | TBD | Pending |
-| CONF-03 | TBD | Pending |
-| CONF-04 | TBD | Pending |
-| CONF-05 | TBD | Pending |
-| CONF-06 | TBD | Pending |
-| UI-01 | TBD | Pending |
-| UI-02 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| UI-05 | TBD | Pending |
-| SAFE-01 | TBD | Pending |
-| SAFE-02 | TBD | Pending |
-| SAFE-03 | TBD | Pending |
-| SAFE-04 | TBD | Pending |
-| SAFE-05 | TBD | Pending |
-| DDEV-01 | TBD | Pending |
-| DDEV-02 | TBD | Pending |
-| DDEV-03 | TBD | Pending |
-| DDEV-04 | TBD | Pending |
-| DDEV-05 | TBD | Pending |
-| DDEV-06 | TBD | Pending |
-| DDEV-07 | TBD | Pending |
-| DDEV-08 | TBD | Pending |
+| FIRE-01 | Phase 1 | Pending |
+| FIRE-02 | Phase 1 | Pending |
+| FIRE-03 | Phase 1 | Pending |
+| FIRE-04 | Phase 1 | Pending |
+| FIRE-05 | Phase 4 | Pending |
+| FIRE-06 | Phase 1 | Pending |
+| CONF-01 | Phase 2 | Pending |
+| CONF-02 | Phase 2 | Pending |
+| CONF-03 | Phase 2 | Pending |
+| CONF-04 | Phase 2 | Pending |
+| CONF-05 | Phase 2 | Pending |
+| CONF-06 | Phase 2 | Pending |
+| UI-01 | Phase 2 | Pending |
+| UI-02 | Phase 2 | Pending |
+| UI-03 | Phase 2 | Pending |
+| UI-04 | Phase 2 | Pending |
+| UI-05 | Phase 2 | Pending |
+| SKILL-01 | Phase 2 | Pending |
+| SKILL-02 | Phase 2 | Pending |
+| SKILL-03 | Phase 2 | Pending |
+| SAFE-01 | Phase 3 | Pending |
+| SAFE-02 | Phase 3 | Pending |
+| SAFE-03 | Phase 3 | Pending |
+| SAFE-04 | Phase 3 | Pending |
+| SAFE-05 | Phase 3 | Pending |
+| DDEV-01 | Phase 1 | Pending |
+| DDEV-02 | Phase 1 | Pending |
+| DDEV-03 | Phase 1 | Pending |
+| DDEV-04 | Phase 1 | Pending |
+| DDEV-05 | Phase 1 | Pending |
+| DDEV-06 | Phase 1 | Pending |
+| DDEV-07 | Phase 3 | Pending |
+| DDEV-08 | Phase 3 | Pending |
 
 **Coverage:**
-- v1 requirements: 29 total
-- Mapped to phases: 0
-- Unmapped: 29 ⚠️
+- v1 requirements: 32 total
+- Mapped to phases: 32
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2025-01-24*
-*Last updated: 2025-01-24 after initial definition*
+*Last updated: 2026-01-24 after roadmap creation*
