@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A public DDEV addon that sandboxes Claude Code for safer autonomous operation. Installs Claude CLI in the web container with a network firewall (whitelist-based, default-deny) that protects against prompt injection attacks while allowing normal development workflows. Built for agency use, shared with the DDEV community.
+A public DDEV addon that sandboxes Claude Code for safer autonomous operation. Creates a dedicated `claude` container with a network firewall (whitelist-based, default-deny) that protects against prompt injection attacks while allowing normal development workflows. The web container remains completely unchanged. Built for agency use, shared with the DDEV community.
 
 ## Core Value
 
@@ -16,7 +16,7 @@ Enable `--dangerously-skip-permissions` with confidence — Claude can work auto
 
 ### Active
 
-- [ ] Claude CLI installed in DDEV web container
+- [ ] Dedicated `claude` container with Claude CLI installed
 - [ ] Network firewall with whitelist-based outbound filtering
 - [ ] Default whitelist covers Claude API, GitHub, Composer, npm
 - [ ] `ddev claude [args]` command runs Claude with firewall active
@@ -61,8 +61,9 @@ Preliminary implementation plan exists at: `~/.claude/plans/goofy-humming-thomps
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Whitelist approach over blacklist | Safer default — block everything, allow known-good | — Pending |
-| iptables over proxy | Simpler, no SSL interception needed, sufficient for domain-level | — Pending |
+| Dedicated claude container over web container modification | Web container needs unrestricted network for normal ops (composer, npm, APIs). Claude isolation shouldn't break website. | Adopted 2026-01-24 |
+| Whitelist approach over blacklist | Safer default — block everything, allow known-good | Adopted |
+| iptables over proxy | Simpler, no SSL interception needed, sufficient for domain-level | Adopted |
 | Guidance over enforcement for file rules | User mounts their own Claude config, we warn but don't manage | — Pending |
 | Global + per-project config | Teams need shared defaults, projects need overrides | — Pending |
 | Public repo from start | Built for agency, valuable to DDEV community | — Pending |

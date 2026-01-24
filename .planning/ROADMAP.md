@@ -12,7 +12,7 @@ This roadmap delivers a DDEV addon that sandboxes Claude Code with network firew
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Firewall Foundation** - Core iptables firewall and DDEV addon skeleton
+- [ ] **Phase 1: Firewall Foundation** - Dedicated claude container with iptables firewall
 - [ ] **Phase 2: Configuration & Commands** - Domain whitelist system and user interface
 - [ ] **Phase 3: Safety Warnings & Documentation** - Security checks and user guidance
 - [ ] **Phase 4: Dynamic IP Refresh** - Production-ready IP management
@@ -20,23 +20,25 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Phase Details
 
 ### Phase 1: Firewall Foundation
-**Goal:** DDEV addon installs with functional network firewall blocking outbound traffic by default
+**Goal:** DDEV addon creates a dedicated `claude` container with functional network firewall blocking outbound traffic by default
 **Depends on:** Nothing (first phase)
 **Requirements:** FIRE-01, FIRE-02, FIRE-03, FIRE-04, FIRE-06, DDEV-01, DDEV-02, DDEV-03, DDEV-04, DDEV-05, DDEV-06
 **Success Criteria** (what must be TRUE):
   1. DDEV addon can be installed and removed idempotently using `ddev get` and `ddev addon remove`
-  2. Web container has iptables-nft and ipset tools available after installation
-  3. Outbound network traffic is blocked by default with whitelisted domains allowed through
-  4. DNS resolution works before firewall applies (UDP/TCP 53 whitelisted)
-  5. Firewall rules persist across container restarts via ENTRYPOINT script
-  6. Healthcheck verifies iptables rules are loaded and functional
-  7. Blocked requests are logged with domain/IP for debugging
-**Plans:** 3 plans
+  2. Dedicated `claude` container created with iptables-nft and ipset tools
+  3. Claude container runs as root (required for iptables) with NET_ADMIN/NET_RAW capabilities
+  4. Project files mounted into claude container at same path as web container
+  5. Outbound network traffic blocked by default with whitelisted domains allowed through
+  6. DNS resolution works before firewall applies (UDP/TCP 53 whitelisted)
+  7. Firewall rules persist across container restarts via ENTRYPOINT script
+  8. Healthcheck verifies iptables rules are loaded and functional
+  9. Web container remains completely unchanged (no firewall, no capability changes)
+**Plans:** TBD (replanning required)
 
 Plans:
-- [x] 01-01-PLAN.md — DDEV addon skeleton with capabilities and Dockerfile
-- [x] 01-02-PLAN.md — Core firewall scripts (entrypoint, domain resolution, whitelist)
-- [x] 01-03-PLAN.md — Healthcheck validation and internal logging
+- [ ] 01-01-PLAN.md — DDEV addon skeleton with dedicated claude container
+- [ ] 01-02-PLAN.md — Core firewall scripts (entrypoint, domain resolution, whitelist)
+- [ ] 01-03-PLAN.md — Healthcheck validation and logging
 
 ### Phase 2: Configuration & Commands
 **Goal:** Users can configure domain whitelists and run Claude CLI through DDEV
@@ -99,7 +101,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Firewall Foundation | 3/3 | ✓ Complete | 2026-01-24 |
+| 1. Firewall Foundation | 0/3 | Replanning (architecture change) | - |
 | 2. Configuration & Commands | 0/TBD | Not started | - |
 | 3. Safety Warnings & Documentation | 0/TBD | Not started | - |
 | 4. Dynamic IP Refresh | 0/TBD | Not started | - |

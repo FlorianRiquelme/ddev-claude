@@ -9,29 +9,25 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 
 ## Current Position
 
-Phase: 2 of 4 (Configuration & Commands)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-01-24 — Phase 1 complete and verified
+Phase: 1 of 4 (Firewall Foundation)
+Plan: 0 of 3 in current phase
+Status: Replanning — architecture change to dedicated container
+Last activity: 2026-01-24 — UAT revealed web container approach breaks website
 
-Progress: [███░░░░░░░] 25%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 1.53 min
-- Total execution time: 0.08 hours
+- Total plans completed: 0 (reset after architecture change)
+- Average duration: —
+- Total execution time: —
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Firewall Foundation | 3 | 4.6min | 1.53min |
-
-**Recent Trend:**
-- Last 5 plans: 01-01 (2min), 01-02 (1min), 01-03 (1.6min)
-- Trend: Consistent execution speed
+| 1. Firewall Foundation | 0 | — | — |
 
 *Updated after each plan completion*
 
@@ -42,29 +38,16 @@ Progress: [███░░░░░░░] 25%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- **Dedicated claude container over web container modification** (2026-01-24): Web container needs unrestricted network for normal ops (composer, npm, APIs). Firewall on web container breaks the website. Claude runs in isolated container instead.
 - Whitelist approach over blacklist: Safer default — block everything, allow known-good
 - iptables over proxy: Simpler, no SSL interception needed, sufficient for domain-level
 - Guidance over enforcement for file rules: User mounts their own Claude config, we warn but don't manage
 - Global + per-project config: Teams need shared defaults, projects need overrides
 
-**From 01-01 execution:**
-- DDEV v1.24.10+ required for proper build context support
-- Pre-install validation ensures NET_ADMIN capability is supported
-- Idempotent removal actions for safe addon uninstallation
-- Entrypoint chaining pattern: firewall setup → DDEV entrypoint
-- Read-only mount of ~/.claude config for security
-
-**From 01-02 execution:**
-- Rule ordering critical: loopback → DNS → established → whitelist → DROP
-- ipset timeout 3600s (1 hour) balances DNS TTL with auto-refresh
-- Graceful DNS failures: unresolvable domains logged but don't fail firewall
-- Rate-limited logging (2/sec) prevents log flooding while maintaining visibility
-
-**From 01-03 execution:**
-- Healthcheck validates 5 checks: rule count, DROP policy, ipset exists, ipset entries, functional blocking test
-- Functional blocking test uses TEST-NET-2 (198.51.100.1) - reserved IP, never routable, safe for testing
-- Empty ipset triggers warning not failure - legitimate if no domains configured yet
-- Internal logging setup prepares for Phase 2 whitelist suggestions without adding complexity now
+**Lessons from failed web container approach:**
+- iptables requires root or proper capabilities — DDEV web container runs as non-root user
+- Firewall on web container blocks website's own outbound traffic (composer, npm, etc.)
+- Architecture must isolate Claude from web container entirely
 
 ### Pending Todos
 
@@ -76,6 +59,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 phase execution
-Stopped at: Phase 1 complete and verified. Ready for Phase 2 planning.
+Last session: 2026-01-24 UAT and architecture revision
+Stopped at: Phase 1 needs replanning with dedicated container architecture
 Resume file: None
+
+Next action: `/gsd:plan-phase 1` to create new plans for dedicated claude container
