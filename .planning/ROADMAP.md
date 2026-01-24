@@ -13,7 +13,7 @@ This roadmap delivers a DDEV addon that sandboxes Claude Code with network firew
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Firewall Foundation** - Dedicated claude container with iptables firewall
-- [ ] **Phase 2: Configuration & Commands** - Domain whitelist system and user interface
+- [x] **Phase 2: Configuration & Commands** - Domain whitelist system and user interface
 - [ ] **Phase 3: Safety Warnings & Documentation** - Security checks and user guidance
 - [ ] **Phase 4: Dynamic IP Refresh** - Production-ready IP management
 
@@ -65,8 +65,8 @@ Plans:
 - [x] 02-03-PLAN.md — Hot reload system (inotify watcher, reload script, entrypoint update)
 - [x] 02-04-PLAN.md — Interactive whitelist management (gum UI, blocked domain parsing)
 - [x] 02-05-PLAN.md — Claude /whitelist skill integration
-- [ ] 02-06-PLAN.md — [GAP CLOSURE] --no-firewall domain logging
-- [ ] 02-07-PLAN.md — [GAP CLOSURE] User-friendly block error messages
+- [x] 02-06-PLAN.md — [GAP CLOSURE] --no-firewall domain logging
+- [x] 02-07-PLAN.md — [GAP CLOSURE] User-friendly block error messages
 
 ### Phase 3: Safety Warnings & Documentation
 **Goal:** Users understand security boundaries and receive warnings for risky configurations
@@ -108,6 +108,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Firewall Foundation | 3/3 | ✓ Complete | 2026-01-24 |
-| 2. Configuration & Commands | 0/5 | Not started | - |
+| 2. Configuration & Commands | 7/7 | ✓ Complete | 2026-01-24 |
 | 3. Safety Warnings & Documentation | 0/TBD | Not started | - |
 | 4. Dynamic IP Refresh | 0/TBD | Not started | - |

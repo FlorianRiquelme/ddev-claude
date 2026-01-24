@@ -18,26 +18,26 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Configuration
 
-- [ ] **CONF-01**: Per-project config at `.ddev/ddev-claude/whitelist.txt`
-- [ ] **CONF-02**: Global config at `~/.ddev/ddev-claude/whitelist.txt`
-- [ ] **CONF-03**: Per-project overrides global (additive merge)
-- [ ] **CONF-04**: Default whitelist includes Claude API, GitHub, Composer, npm
-- [ ] **CONF-05**: Hot reload whitelist without container restart
-- [ ] **CONF-06**: Stack templates available for common frameworks (Laravel, npm, etc.)
+- [x] **CONF-01**: Per-project config at `.ddev/ddev-claude/whitelist.json`
+- [x] **CONF-02**: Global config at `~/.ddev/ddev-claude/whitelist.json`
+- [x] **CONF-03**: Per-project overrides global (additive merge)
+- [x] **CONF-04**: Default whitelist includes Claude API, GitHub, Composer, npm
+- [x] **CONF-05**: Hot reload whitelist without container restart
+- [x] **CONF-06**: Stack templates available for common frameworks (Laravel, npm, etc.)
 
 ### User Interface
 
-- [ ] **UI-01**: `ddev claude [args]` runs Claude CLI with firewall active
-- [ ] **UI-02**: `ddev claude --no-firewall` disables firewall but logs outbound domains
-- [ ] **UI-03**: `ddev claude:whitelist` shows domains from last session (blocked or accessed)
-- [ ] **UI-04**: Interactive selection in `claude:whitelist` to add domains to whitelist
-- [ ] **UI-05**: Clear error messaging when requests are blocked
+- [x] **UI-01**: `ddev claude [args]` runs Claude CLI with firewall active
+- [x] **UI-02**: `ddev claude --no-firewall` disables firewall but logs outbound domains
+- [x] **UI-03**: `ddev claude:whitelist` shows domains from last session (blocked or accessed)
+- [x] **UI-04**: Interactive selection in `claude:whitelist` to add domains to whitelist
+- [x] **UI-05**: Clear error messaging when requests are blocked
 
 ### Claude Skill
 
-- [ ] **SKILL-01**: `/whitelist` skill provides Claude with firewall awareness and context
-- [ ] **SKILL-02**: Skill enables Claude to edit whitelist.txt directly (asks user first)
-- [ ] **SKILL-03**: Skill triggers hot reload after whitelist changes
+- [x] **SKILL-01**: `/whitelist` skill provides Claude with firewall awareness and context
+- [x] **SKILL-02**: Skill enables Claude to edit whitelist.json directly (asks user first)
+- [x] **SKILL-03**: Skill triggers hot reload after whitelist changes
 
 ### Safety
 
@@ -100,20 +100,20 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FIRE-04 | Phase 1 | Complete |
 | FIRE-05 | Phase 4 | Pending |
 | FIRE-06 | Phase 1 | Complete |
-| CONF-01 | Phase 2 | Pending |
-| CONF-02 | Phase 2 | Pending |
-| CONF-03 | Phase 2 | Pending |
-| CONF-04 | Phase 2 | Pending |
-| CONF-05 | Phase 2 | Pending |
-| CONF-06 | Phase 2 | Pending |
-| UI-01 | Phase 2 | Pending |
-| UI-02 | Phase 2 | Pending |
-| UI-03 | Phase 2 | Pending |
-| UI-04 | Phase 2 | Pending |
-| UI-05 | Phase 2 | Pending |
-| SKILL-01 | Phase 2 | Pending |
-| SKILL-02 | Phase 2 | Pending |
-| SKILL-03 | Phase 2 | Pending |
+| CONF-01 | Phase 2 | Complete |
+| CONF-02 | Phase 2 | Complete |
+| CONF-03 | Phase 2 | Complete |
+| CONF-04 | Phase 2 | Complete |
+| CONF-05 | Phase 2 | Complete |
+| CONF-06 | Phase 2 | Complete |
+| UI-01 | Phase 2 | Complete |
+| UI-02 | Phase 2 | Complete |
+| UI-03 | Phase 2 | Complete |
+| UI-04 | Phase 2 | Complete |
+| UI-05 | Phase 2 | Complete |
+| SKILL-01 | Phase 2 | Complete |
+| SKILL-02 | Phase 2 | Complete |
+| SKILL-03 | Phase 2 | Complete |
 | SAFE-01 | Phase 3 | Pending |
 | SAFE-02 | Phase 3 | Pending |
 | SAFE-03 | Phase 3 | Pending |
@@ -135,4 +135,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-01-24*
-*Last updated: 2026-01-24 after Phase 1 completion*
+*Last updated: 2026-01-24 after Phase 2 completion*
