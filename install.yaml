@@ -12,6 +12,10 @@ pre_install_actions:
 project_files:
   - claude/
   - docker-compose.claude.yaml
+  - source: claude/skills/
+    destination: .ddev/ddev-claude/skills/
+  - source: commands/host/
+    destination: .ddev/commands/host/
 
 post_install_actions:
   - |
