@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2025-01-24)
 ## Current Position
 
 Phase: 1 of 4 (Firewall Foundation)
-Plan: 1 of 3 in current phase
-Status: In progress — DDEV addon skeleton complete
-Last activity: 2026-01-24 — Completed 01-01-PLAN.md
+Plan: 2 of 3 in current phase
+Status: In progress — Firewall scripts complete
+Last activity: 2026-01-24 — Completed 01-02-PLAN.md
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 1 min
-- Total execution time: 1 min
+- Total plans completed: 2
+- Average duration: 1.5 min
+- Total execution time: 3 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Firewall Foundation | 1 | 1 min | 1 min |
+| 1. Firewall Foundation | 2 | 3 min | 1.5 min |
 
 *Updated after each plan completion*
 
@@ -55,6 +55,12 @@ Recent decisions affecting current work:
 - ~/.claude mounted to /home/.claude for config persistence
 - debian:bookworm-slim base matches DDEV web container OS
 
+**Plan 01-02 decisions:**
+- Critical rule ordering: loopback -> DNS -> established -> whitelist -> DROP to avoid self-blocking
+- ipset timeout 3600 seconds (1 hour) for DNS TTL safety
+- Rate-limited logging (2/sec) to prevent log flooding while maintaining visibility
+- Graceful domain resolution failure: warn and continue, don't fail entire firewall
+
 ### Pending Todos
 
 1. **Make repository LLM-friendly with comprehensive docs** (docs) — Enable LLMs to understand and explain the project, assist with installation/configuration
@@ -65,8 +71,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24 07:04 UTC
-Stopped at: Completed 01-01-PLAN.md (DDEV addon skeleton)
+Last session: 2026-01-24 07:10 UTC
+Stopped at: Completed 01-02-PLAN.md (Firewall scripts)
 Resume file: None
 
-Next action: Execute 01-02-PLAN.md (Firewall scripts)
+Next action: Execute 01-03-PLAN.md (Healthcheck & integration testing)
