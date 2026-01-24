@@ -10,9 +10,26 @@
 if [[ "$1" == "--no-firewall" ]]; then
     shift
     echo "[ddev-claude] Firewall disabled for this session"
-    echo "[ddev-claude] Run 'ddev claude:whitelist' after to add accessed domains"
-    # Temporarily disable firewall in container, use "$@" for proper argument passing
+    echo "[ddev-claude] Logging network traffic to build whitelist..."
+
+    # Start traffic logging
+    LOGGER_PID=$(ddev exec -s claude /var/www/html/.ddev/claude/scripts/log-network-traffic.sh start)
+
+    # Disable firewall and run claude
     ddev exec -s claude bash -c "iptables -F OUTPUT && iptables -P OUTPUT ACCEPT && claude \"\$@\"" -- "$@"
+    EXIT_CODE=$?
+
+    # Stop logging and save results
+    ddev exec -s claude /var/www/html/.ddev/claude/scripts/log-network-traffic.sh stop "$LOGGER_PID"
+
+    # Show accessed domains
+    echo ""
+    echo "[ddev-claude] Domains accessed during this session:"
+    ddev exec -s claude cat /tmp/ddev-claude-accessed.log 2>/dev/null || echo "(none captured)"
+    echo ""
+    echo "[ddev-claude] Run 'ddev claude:whitelist' to add these to your whitelist"
+
+    exit $EXIT_CODE
 else
     # Normal mode: firewall active
     ddev exec -s claude claude "$@"
