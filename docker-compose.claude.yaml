@@ -18,9 +18,12 @@ services:
         source: ${DDEV_APPROOT}
         target: /var/www/html
         consistency: cached
-      - ~/.claude:/home/.claude:rw
+      - ~/.claude:/root/.claude:rw
 
     working_dir: /var/www/html
+
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
 
     networks:
       - default

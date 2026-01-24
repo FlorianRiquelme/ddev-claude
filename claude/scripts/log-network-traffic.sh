@@ -7,22 +7,21 @@
 
 set -euo pipefail
 
-PCAP_FILE="/tmp/ddev-claude-traffic.pcap"
+RAW_LOG="/tmp/ddev-claude-traffic-raw.log"
 ACCESSED_LOG="/tmp/ddev-claude-accessed.log"
 PID_FILE="/tmp/ddev-claude-tcpdump.pid"
 
 case "${1:-}" in
     start)
         # Clean up any previous captures
-        rm -f "$PCAP_FILE" "$ACCESSED_LOG" "$PID_FILE"
+        rm -f "$RAW_LOG" "$ACCESSED_LOG" "$PID_FILE"
 
-        # Start tcpdump in background to capture DNS queries (port 53)
+        # Start tcpdump writing directly to text log (not pcap)
         # -i any: capture on all interfaces
-        # -n: don't resolve hostnames (avoid recursive lookups)
-        # -s 0: capture full packets
-        # port 53: DNS traffic only
-        # -w: write to pcap file
-        tcpdump -i any -n -s 0 'port 53' -w "$PCAP_FILE" >/dev/null 2>&1 &
+        # -n: don't resolve hostnames
+        # -l: line buffered for real-time output
+        # -v: verbose to show domain names in responses
+        tcpdump -i any -n -l -v 'port 53' >> "$RAW_LOG" 2>&1 &
 
         TCPDUMP_PID=$!
         echo "$TCPDUMP_PID" > "$PID_FILE"
@@ -48,35 +47,21 @@ case "${1:-}" in
         # Stop tcpdump gracefully
         if kill -0 "$TCPDUMP_PID" 2>/dev/null; then
             kill -TERM "$TCPDUMP_PID" 2>/dev/null || true
-            # Wait for tcpdump to flush buffers
             sleep 1
         fi
 
-        # Parse pcap file to extract queried domain names
-        if [[ -f "$PCAP_FILE" ]]; then
-            # Use tcpdump to read the pcap and extract DNS queries
-            # -r: read from file
-            # -n: don't resolve
-            # -l: line buffered
-            # Filter for DNS queries (not responses) and extract domain names
-            tcpdump -r "$PCAP_FILE" -n -l 2>/dev/null | \
-                grep -oP 'A\? \K[^ ]+' | \
+        # Parse raw log to extract domain names from DNS responses
+        if [[ -f "$RAW_LOG" ]]; then
+            # Extract domains from DNS responses (format: "domain.com. A x.x.x.x")
+            grep -oE '[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+\. (A|AAAA) ' "$RAW_LOG" 2>/dev/null | \
+                awk '{print $1}' | \
                 sed 's/\.$//' | \
                 grep -v '^$' | \
                 sort -u > "$ACCESSED_LOG" || true
-
-            # Alternative parsing if grep -P not available (BSD systems)
-            if [[ ! -s "$ACCESSED_LOG" ]]; then
-                tcpdump -r "$PCAP_FILE" -n 2>/dev/null | \
-                    awk '/A\?/ {for(i=1;i<=NF;i++) if($i=="A?") print $(i+1)}' | \
-                    sed 's/\.$//' | \
-                    grep -v '^$' | \
-                    sort -u > "$ACCESSED_LOG" || true
-            fi
         fi
 
         # Clean up temp files
-        rm -f "$PCAP_FILE" "$PID_FILE"
+        rm -f "$RAW_LOG" "$PID_FILE"
         ;;
 
     *)

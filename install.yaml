@@ -12,12 +12,13 @@ pre_install_actions:
 project_files:
   - claude/
   - docker-compose.claude.yaml
-  - source: claude/skills/
-    destination: .ddev/ddev-claude/skills/
-  - source: commands/host/
-    destination: .ddev/commands/host/
+  - commands/host/
 
 post_install_actions:
+  - |
+    #ddev-description:Copying Claude skills to project
+    mkdir -p .ddev/ddev-claude/skills
+    cp -r .ddev/claude/skills/* .ddev/ddev-claude/skills/ 2>/dev/null || true
   - |
     #ddev-description:Making firewall scripts executable
     chmod +x .ddev/claude/*.sh 2>/dev/null || true
