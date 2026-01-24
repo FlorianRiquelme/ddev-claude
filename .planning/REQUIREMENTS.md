@@ -9,12 +9,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Firewall
 
-- [ ] **FIRE-01**: Outbound traffic blocked by default (whitelist approach)
-- [ ] **FIRE-02**: Whitelisted domains resolved to IPs and allowed through firewall
-- [ ] **FIRE-03**: DNS traffic (UDP/TCP 53) allowed before restrictive rules
-- [ ] **FIRE-04**: Firewall rules persist across container restarts (ENTRYPOINT-based)
+- [x] **FIRE-01**: Outbound traffic blocked by default (whitelist approach)
+- [x] **FIRE-02**: Whitelisted domains resolved to IPs and allowed through firewall
+- [x] **FIRE-03**: DNS traffic (UDP/TCP 53) allowed before restrictive rules
+- [x] **FIRE-04**: Firewall rules persist across container restarts (ENTRYPOINT-based)
 - [ ] **FIRE-05**: Dynamic IP refresh re-resolves domains periodically (CDN rotation)
-- [ ] **FIRE-06**: Blocked requests logged with domain/IP for debugging
+- [x] **FIRE-06**: Blocked requests logged with domain/IP for debugging
 
 ### Configuration
 
@@ -49,12 +49,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### DDEV Addon
 
-- [ ] **DDEV-01**: install.yaml with DDEV v1.24.10+ version constraint
-- [ ] **DDEV-02**: docker-compose grants NET_ADMIN and NET_RAW capabilities
-- [ ] **DDEV-03**: Dockerfile extends web container with iptables-nft and ipset
-- [ ] **DDEV-04**: User's `~/.claude` config mounted into container
-- [ ] **DDEV-05**: Healthcheck validates firewall rules loaded and functional
-- [ ] **DDEV-06**: Installation and removal are idempotent
+- [x] **DDEV-01**: install.yaml with DDEV v1.24.10+ version constraint
+- [x] **DDEV-02**: docker-compose grants NET_ADMIN and NET_RAW capabilities
+- [x] **DDEV-03**: Dockerfile extends web container with iptables-nft and ipset
+- [x] **DDEV-04**: User's `~/.claude` config mounted into container
+- [x] **DDEV-05**: Healthcheck validates firewall rules loaded and functional
+- [x] **DDEV-06**: Installation and removal are idempotent
 - [ ] **DDEV-07**: bats test suite for CI/CD validation
 - [ ] **DDEV-08**: README with installation, usage, and security documentation
 
@@ -94,12 +94,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIRE-01 | Phase 1 | Pending |
-| FIRE-02 | Phase 1 | Pending |
-| FIRE-03 | Phase 1 | Pending |
-| FIRE-04 | Phase 1 | Pending |
+| FIRE-01 | Phase 1 | Complete |
+| FIRE-02 | Phase 1 | Complete |
+| FIRE-03 | Phase 1 | Complete |
+| FIRE-04 | Phase 1 | Complete |
 | FIRE-05 | Phase 4 | Pending |
-| FIRE-06 | Phase 1 | Pending |
+| FIRE-06 | Phase 1 | Complete |
 | CONF-01 | Phase 2 | Pending |
 | CONF-02 | Phase 2 | Pending |
 | CONF-03 | Phase 2 | Pending |
@@ -119,12 +119,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-03 | Phase 3 | Pending |
 | SAFE-04 | Phase 3 | Pending |
 | SAFE-05 | Phase 3 | Pending |
-| DDEV-01 | Phase 1 | Pending |
-| DDEV-02 | Phase 1 | Pending |
-| DDEV-03 | Phase 1 | Pending |
-| DDEV-04 | Phase 1 | Pending |
-| DDEV-05 | Phase 1 | Pending |
-| DDEV-06 | Phase 1 | Pending |
+| DDEV-01 | Phase 1 | Complete |
+| DDEV-02 | Phase 1 | Complete |
+| DDEV-03 | Phase 1 | Complete |
+| DDEV-04 | Phase 1 | Complete |
+| DDEV-05 | Phase 1 | Complete |
+| DDEV-06 | Phase 1 | Complete |
 | DDEV-07 | Phase 3 | Pending |
 | DDEV-08 | Phase 3 | Pending |
 
@@ -135,4 +135,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2025-01-24*
-*Last updated: 2026-01-24 after roadmap creation*
+*Last updated: 2026-01-24 after Phase 1 completion*

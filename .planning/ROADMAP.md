@@ -12,7 +12,7 @@ This roadmap delivers a DDEV addon that sandboxes Claude Code with network firew
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Firewall Foundation** - Core iptables firewall and DDEV addon skeleton
+- [x] **Phase 1: Firewall Foundation** - Core iptables firewall and DDEV addon skeleton
 - [ ] **Phase 2: Configuration & Commands** - Domain whitelist system and user interface
 - [ ] **Phase 3: Safety Warnings & Documentation** - Security checks and user guidance
 - [ ] **Phase 4: Dynamic IP Refresh** - Production-ready IP management
@@ -34,9 +34,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — DDEV addon skeleton with capabilities and Dockerfile
-- [ ] 01-02-PLAN.md — Core firewall scripts (entrypoint, domain resolution, whitelist)
-- [ ] 01-03-PLAN.md — Healthcheck validation and internal logging
+- [x] 01-01-PLAN.md — DDEV addon skeleton with capabilities and Dockerfile
+- [x] 01-02-PLAN.md — Core firewall scripts (entrypoint, domain resolution, whitelist)
+- [x] 01-03-PLAN.md — Healthcheck validation and internal logging
 
 ### Phase 2: Configuration & Commands
 **Goal:** Users can configure domain whitelists and run Claude CLI through DDEV
@@ -99,7 +99,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Firewall Foundation | 0/3 | Planned | - |
+| 1. Firewall Foundation | 3/3 | ✓ Complete | 2026-01-24 |
 | 2. Configuration & Commands | 0/TBD | Not started | - |
 | 3. Safety Warnings & Documentation | 0/TBD | Not started | - |
 | 4. Dynamic IP Refresh | 0/TBD | Not started | - |
