@@ -1,0 +1,19 @@
+services:
+  web:
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    entrypoint:
+      - /var/www/html/.ddev/firewall/entrypoint.sh
+    command:
+      - /docker-entrypoint.sh
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - /var/www/html/.ddev/firewall/healthcheck.sh
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    volumes:
+      - ~/.claude:/home/.claude:ro
