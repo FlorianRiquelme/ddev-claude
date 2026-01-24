@@ -1,0 +1,25 @@
+name: ddev-claude
+ddev_version_constraint: '>= v1.24.10'
+
+pre_install_actions:
+  #ddev-description:Validating Docker supports NET_ADMIN capability
+  - docker run --rm --cap-add=NET_ADMIN alpine sh -c 'exit 0' || (echo "ERROR: Docker does not support NET_ADMIN capability. This addon requires kernel capabilities for iptables firewall." && exit 1)
+
+project_files:
+  - firewall/
+  - web-build/Dockerfile.firewall
+  - docker-compose.firewall.yaml
+
+post_install_actions:
+  #ddev-description:Making firewall scripts executable
+  - chmod +x .ddev/firewall/*.sh
+
+removal_actions:
+  #ddev-description:Flushing iptables rules
+  - ddev exec iptables -F OUTPUT 2>/dev/null || true
+  #ddev-description:Resetting OUTPUT chain policy
+  - ddev exec iptables -P OUTPUT ACCEPT 2>/dev/null || true
+  #ddev-description:Destroying ipset whitelist
+  - ddev exec ipset destroy whitelist_ips 2>/dev/null || true
+  #ddev-description:Removing addon files
+  - rm -rf .ddev/firewall .ddev/web-build/Dockerfile.firewall .ddev/docker-compose.firewall.yaml
