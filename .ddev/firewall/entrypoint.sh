@@ -43,12 +43,12 @@ log "Resolving whitelisted domains..."
 log "Allowing whitelisted IPs..."
 iptables -A OUTPUT -m set --match-set whitelist_ips dst -j ACCEPT
 
-# 8. Internal logging for Phase 2 whitelist suggestions
-# Note: This is a placeholder for future implementation
-# We'll capture blocked connections to /tmp/ddev-claude-blocked.log
-# and deduplicate them for suggesting additions to whitelist
+# 8. Initialize blocked request log for Phase 2 whitelist suggestions
+> "$BLOCKED_LOG"  # Truncate on start (current session only)
+log "Initialized blocked request log at $BLOCKED_LOG"
 
 # 9. Visible logging (rate limited to prevent log flooding)
+# Phase 2 will parse kernel log for whitelist suggestions
 log "Setting up blocked traffic logging..."
 iptables -A OUTPUT -m limit --limit 2/sec --limit-burst 5 -j LOG --log-prefix "[FIREWALL-BLOCK] " --log-level warning
 
@@ -58,6 +58,7 @@ iptables -P OUTPUT DROP
 
 log "Firewall initialized successfully"
 log "Policy: Default DENY, whitelisted domains allowed"
+log "To see blocked requests: dmesg | grep FIREWALL-BLOCK"
 
 # 11. Chain to original DDEV entrypoint
 exec "$@"
