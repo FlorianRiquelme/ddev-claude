@@ -3,7 +3,6 @@ set -euo pipefail
 
 LOG_PREFIX="[ddev-claude]"
 SCRIPT_DIR="/var/www/html/.ddev/claude"
-WHITELIST_FILE="$SCRIPT_DIR/whitelist-domains.txt"
 BLOCKED_LOG="/tmp/ddev-claude-blocked.log"
 
 log() { echo "$LOG_PREFIX $*"; }
@@ -39,11 +38,15 @@ log "Allowed DNS resolution (port 53)"
 iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 log "Allowed established/related connections"
 
-# 6. Resolve domains and populate ipset
-if [[ -f "$WHITELIST_FILE" ]]; then
-  "$SCRIPT_DIR/resolve-and-apply.sh" "$WHITELIST_FILE"
+# 6. Get merged whitelist (default + global + project)
+merged_whitelist=$("$SCRIPT_DIR/scripts/merge-whitelist.sh")
+if [[ -n "$merged_whitelist" ]]; then
+    temp_whitelist=$(mktemp)
+    echo "$merged_whitelist" > "$temp_whitelist"
+    "$SCRIPT_DIR/resolve-and-apply.sh" "$temp_whitelist"
+    rm -f "$temp_whitelist"
 else
-  log "WARNING: Whitelist file not found at $WHITELIST_FILE"
+    log "WARNING: No domains in merged whitelist"
 fi
 
 # 7. Allow traffic to whitelisted IPs
@@ -62,6 +65,12 @@ log "Set default policy to DROP"
 ip_count=$(ipset list whitelist_ips 2>/dev/null | grep -c "^[0-9]" || echo 0)
 log "Firewall initialized successfully ($ip_count IPs whitelisted)"
 log "To see blocked requests: dmesg | grep FIREWALL-BLOCK"
+
+# Start config file watcher in background
+log "Starting config file watcher..."
+"$SCRIPT_DIR/scripts/watch-config.sh" &
+WATCHER_PID=$!
+log "Config watcher started (PID $WATCHER_PID)"
 
 # Execute command passed to entrypoint
 exec "$@"
