@@ -45,8 +45,8 @@ Plans:
 **Depends on:** Phase 1
 **Requirements:** CONF-01, CONF-02, CONF-03, CONF-04, CONF-05, CONF-06, UI-01, UI-02, UI-03, UI-04, UI-05, SKILL-01, SKILL-02, SKILL-03
 **Success Criteria** (what must be TRUE):
-  1. Per-project whitelist config exists at `.ddev/ddev-claude/whitelist.json` and is loaded on startup
-  2. Global whitelist config exists at `~/.ddev/ddev-claude/whitelist.json` and merges with per-project config
+  1. Per-project whitelist config exists at `.ddev/ddev-claude/whitelist.json` (JSON format) and is loaded on startup
+  2. Global whitelist config exists at `~/.ddev/ddev-claude/whitelist.json` (JSON format) and merges with per-project config
   3. Default whitelist includes Claude API, GitHub, Composer, npm registries
   4. Stack templates available for common frameworks (Laravel, npm) to quickly configure whitelists
   5. `ddev claude [args]` command runs Claude CLI inside container with firewall active
