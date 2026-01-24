@@ -24,8 +24,14 @@ done
 echo "Scanning for blocked requests..."
 blocked=$(ddev exec -s claude /var/www/html/.ddev/claude/scripts/parse-blocked-domains.sh 2>/dev/null || echo "")
 
-if [[ -z "$blocked" ]]; then
-    echo "No blocked domains found in current session."
+# Get accessed domains from no-firewall sessions
+accessed=$(ddev exec -s claude cat /tmp/ddev-claude-accessed.log 2>/dev/null || echo "")
+
+# Combine and deduplicate
+all_domains=$(echo -e "${blocked}\n${accessed}" | grep -v '^$' | sort -u)
+
+if [[ -z "$all_domains" ]]; then
+    echo "No blocked or accessed domains found."
     echo ""
     echo "Current whitelist (merged):"
     ddev exec -s claude /var/www/html/.ddev/claude/scripts/merge-whitelist.sh 2>/dev/null || echo "(empty)"
@@ -34,8 +40,20 @@ if [[ -z "$blocked" ]]; then
 fi
 
 # Filter out IPs without reverse DNS (keep only actual domains)
-domains=$(echo "$blocked" | grep -v "(no reverse DNS)" || echo "")
-ips_only=$(echo "$blocked" | grep "(no reverse DNS)" || echo "")
+domains=$(echo "$all_domains" | grep -v "(no reverse DNS)" || echo "")
+ips_only=$(echo "$all_domains" | grep "(no reverse DNS)" || echo "")
+
+# Count sources
+blocked_count=$(echo "$blocked" | grep -v '^$' | wc -l | tr -d ' ')
+accessed_count=$(echo "$accessed" | grep -v '^$' | wc -l | tr -d ' ')
+
+echo ""
+if [[ "$blocked_count" -gt 0 ]]; then
+    echo "Blocked by firewall: $blocked_count domain(s)"
+fi
+if [[ "$accessed_count" -gt 0 ]]; then
+    echo "Accessed in no-firewall mode: $accessed_count domain(s)"
+fi
 
 if [[ -n "$ips_only" ]]; then
     echo ""
@@ -50,7 +68,7 @@ if [[ -z "$domains" ]]; then
 fi
 
 echo ""
-echo "Found blocked domains:"
+echo "Found domains:"
 echo "$domains"
 echo ""
 
