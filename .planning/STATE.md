@@ -94,6 +94,12 @@ Recent decisions affecting current work:
 - user-invocable: true enables /command access
 - Skill provides full firewall context including hot reload timing
 
+**Plan 02-06 decisions:**
+- tcpdump over network proxy for DNS capture (simpler, less intrusive)
+- Parse pcap files for domain extraction rather than live stream parsing
+- Support both GNU and BSD grep patterns for portability
+- Combine blocked + accessed domains with deduplication
+
 **Plan 02-07 decisions:**
 - dmesg -w for real-time monitoring instead of polling
 - Reverse DNS with timeout for better UX (show domains not just IPs)
