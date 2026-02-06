@@ -118,8 +118,8 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-24
-Stopped at: Phase 2 verified (12/12 must-haves passed)
-Resume file: None
+Last session: 2026-02-06
+Stopped at: MCP investigation research complete
+Resume file: .planning/investigations/MCP-INVESTIGATION.md
 
-Next action: Begin Phase 3 (Safety Warnings & Documentation)
+Next action: Implement MCP quick win (whitelist common MCP domains), then plan mcp-proxy integration

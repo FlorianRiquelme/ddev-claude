@@ -50,6 +50,53 @@ else
     log "WARNING: No domains in merged whitelist"
 fi
 
+# 6b. Auto-whitelist MCP server domains from user config
+extract_mcp_domains() {
+    local domains=""
+    local mcp_json="/root/.mcp.json"
+    local claude_json="/root/.claude.json"
+    local project_mcp="${DDEV_APPROOT}/.mcp.json"
+
+    # Tier 1: ~/.mcp.json (global)
+    if [[ -f "$mcp_json" ]]; then
+        domains+=$(jq -r '.mcpServers[]?.url? // empty' "$mcp_json" 2>/dev/null || true)
+        domains+=$'\n'
+    fi
+
+    # Tier 2: ~/.claude.json — global mcpServers
+    if [[ -f "$claude_json" ]]; then
+        domains+=$(jq -r '.mcpServers[]?.url? // empty' "$claude_json" 2>/dev/null || true)
+        domains+=$'\n'
+        # Tier 2: ~/.claude.json — current project mcpServers only
+        domains+=$(jq -r --arg proj "$DDEV_APPROOT" \
+            '.projects[$proj]?.mcpServers[]?.url? // empty' "$claude_json" 2>/dev/null || true)
+        domains+=$'\n'
+    fi
+
+    # Tier 3: project-local .mcp.json
+    if [[ -f "$project_mcp" ]]; then
+        domains+=$(jq -r '.mcpServers[]?.url? // empty' "$project_mcp" 2>/dev/null || true)
+        domains+=$'\n'
+    fi
+
+    # Extract hostnames from URLs, filter localhost, deduplicate
+    echo "$domains" \
+        | grep -oP '://\K[^/:?]+' 2>/dev/null \
+        | grep -v -E '^(localhost|127\.0\.0\.1|0\.0\.0\.0)$' \
+        | sort -u \
+        || true
+}
+
+if mcp_domains=$(extract_mcp_domains 2>/dev/null) && [[ -n "$mcp_domains" ]]; then
+    log "Whitelisting MCP domains: $(echo "$mcp_domains" | tr '\n' ', ' | sed 's/,$//')"
+    temp_mcp=$(mktemp)
+    echo "$mcp_domains" > "$temp_mcp"
+    "$SCRIPT_DIR/resolve-and-apply.sh" "$temp_mcp" || log "WARNING: Some MCP domains failed to resolve"
+    rm -f "$temp_mcp"
+else
+    log "No MCP domains detected"
+fi
+
 # 7. Allow traffic to whitelisted IPs
 iptables -A OUTPUT -m set --match-set whitelist_ips dst -j ACCEPT
 log "Allowed whitelisted IPs"

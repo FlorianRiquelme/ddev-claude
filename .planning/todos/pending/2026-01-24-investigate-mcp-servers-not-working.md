@@ -20,9 +20,17 @@ Possible causes to investigate:
 
 ## Solution
 
-TBD - Requires investigation:
+**Investigation plan created:** `.planning/investigations/MCP-INVESTIGATION.md`
 
-1. Reproduce the issue with a known MCP server
-2. Check Claude's MCP connection logs/errors
-3. Determine if network, config, or dependency issue
-4. Implement fix and verify MCP servers work
+Key hypotheses to test:
+1. **stdio MCP servers** - Binaries don't exist in container (HIGH probability)
+2. **HTTP MCP servers** - Blocked by firewall, need `host.docker.internal`
+3. **Path translation** - Host paths in config don't map to container
+4. **Missing dependencies** - Container lacks required runtimes
+
+Recommended v1 approach:
+- Pre-install common MCP npm packages in Dockerfile
+- Whitelist `host.docker.internal` for HTTP MCP servers
+- Document supported vs unsupported MCP configurations
+
+See full investigation plan for detailed steps and solutions.
