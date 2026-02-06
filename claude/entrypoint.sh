@@ -1,8 +1,9 @@
 #!/bin/bash
+#ddev-generated
 set -euo pipefail
 
 LOG_PREFIX="[ddev-claude]"
-SCRIPT_DIR="/var/www/html/.ddev/claude"
+SCRIPT_DIR="${DDEV_APPROOT}/.ddev/claude"
 BLOCKED_LOG="/tmp/ddev-claude-blocked.log"
 
 log() { echo "$LOG_PREFIX $*"; }

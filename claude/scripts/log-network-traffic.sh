@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 # log-network-traffic.sh - Capture accessed domains during no-firewall session
 #
 # Usage:

@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 #
 # reload-whitelist.sh - Reload firewall whitelist from merged config sources
 #
@@ -8,7 +9,7 @@
 set -euo pipefail
 
 LOG_PREFIX="[ddev-claude]"
-SCRIPT_DIR="/var/www/html/.ddev/claude"
+SCRIPT_DIR="${DDEV_APPROOT}/.ddev/claude"
 
 log() { echo "$LOG_PREFIX $*"; }
 error() { echo "$LOG_PREFIX ERROR: $*" >&2; }

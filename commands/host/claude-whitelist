@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 ## Description: Manage firewall whitelist - view blocked domains and add to whitelist
 ## Usage: claude-whitelist
 ## Example: "ddev claude:whitelist"
@@ -22,7 +23,7 @@ done
 
 # Get blocked domains from container
 echo "Scanning for blocked requests..."
-blocked=$(ddev exec -s claude /var/www/html/.ddev/claude/scripts/parse-blocked-domains.sh 2>/dev/null || echo "")
+blocked=$(ddev exec -s claude "${DDEV_APPROOT}/.ddev/claude/scripts/parse-blocked-domains.sh" 2>/dev/null || echo "")
 
 # Get accessed domains from no-firewall sessions
 accessed=$(ddev exec -s claude cat /tmp/ddev-claude-accessed.log 2>/dev/null || echo "")
@@ -34,7 +35,7 @@ if [[ -z "$all_domains" ]]; then
     echo "No blocked or accessed domains found."
     echo ""
     echo "Current whitelist (merged):"
-    ddev exec -s claude /var/www/html/.ddev/claude/scripts/merge-whitelist.sh 2>/dev/null || echo "(empty)"
+    ddev exec -s claude "${DDEV_APPROOT}/.ddev/claude/scripts/merge-whitelist.sh" 2>/dev/null || echo "(empty)"
     echo ""
     exit 0
 fi

@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 #
 # merge-whitelist.sh - Merge multiple whitelist JSON files into line-delimited domains
 #
@@ -14,7 +15,7 @@
 set -euo pipefail
 
 # Configuration paths
-DEFAULT_WHITELIST="/var/www/html/.ddev/claude/config/default-whitelist.json"
+DEFAULT_WHITELIST="${DDEV_APPROOT}/.ddev/claude/config/default-whitelist.json"
 GLOBAL_CONFIG="${1:-$HOME/.ddev/ddev-claude/whitelist.json}"
 PROJECT_CONFIG="${2:-.ddev/ddev-claude/whitelist.json}"
 

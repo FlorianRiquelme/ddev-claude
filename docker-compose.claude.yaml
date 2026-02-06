@@ -10,26 +10,27 @@ services:
       - NET_ADMIN
       - NET_RAW
 
-    entrypoint: ["/var/www/html/.ddev/claude/entrypoint.sh"]
+    entrypoint: ["${DDEV_APPROOT}/.ddev/claude/entrypoint.sh"]
     command: ["tail", "-f", "/dev/null"]
 
     volumes:
       - type: bind
         source: ${DDEV_APPROOT}
-        target: /var/www/html
+        target: ${DDEV_APPROOT}
         consistency: cached
       - ~/.claude:/root/.claude:rw
 
-    working_dir: /var/www/html
+    working_dir: ${DDEV_APPROOT}
 
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - DDEV_APPROOT=${DDEV_APPROOT}
 
     networks:
       - default
 
     healthcheck:
-      test: ["CMD-SHELL", "/var/www/html/.ddev/claude/healthcheck.sh"]
+      test: ["CMD-SHELL", "${DDEV_APPROOT}/.ddev/claude/healthcheck.sh"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 #
 # watch-config.sh - Watch whitelist.json files for changes and trigger reload
 #
@@ -9,7 +10,7 @@
 set -euo pipefail
 
 LOG_PREFIX="[ddev-claude-watch]"
-SCRIPT_DIR="/var/www/html/.ddev/claude"
+SCRIPT_DIR="${DDEV_APPROOT}/.ddev/claude"
 DEBOUNCE_DELAY=2  # seconds
 PID_FILE="/var/run/ddev-claude-watcher.pid"
 
@@ -38,7 +39,7 @@ trap cleanup EXIT
 
 # Config file locations
 GLOBAL_CONFIG="$HOME/.ddev/ddev-claude/whitelist.json"
-PROJECT_CONFIG="/var/www/html/.ddev/ddev-claude/whitelist.json"
+PROJECT_CONFIG="${DDEV_APPROOT}/.ddev/ddev-claude/whitelist.json"
 
 # Create config directories if needed
 mkdir -p "$(dirname "$GLOBAL_CONFIG")" 2>/dev/null || true

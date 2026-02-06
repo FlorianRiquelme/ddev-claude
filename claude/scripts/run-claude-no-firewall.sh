@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 # run-claude-no-firewall.sh - Run Claude with firewall disabled and traffic logging
 #
 # Usage: run-claude-no-firewall.sh [claude args...]

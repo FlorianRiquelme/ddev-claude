@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 # format-block-message.sh - User-friendly firewall block notifications
 
 SEEN_IPS="/tmp/ddev-claude-seen-blocks"

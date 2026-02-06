@@ -1,3 +1,4 @@
+#ddev-generated
 # Claude API
 api.anthropic.com
 claude.ai

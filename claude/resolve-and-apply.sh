@@ -1,7 +1,8 @@
 #!/bin/bash
+#ddev-generated
 set -euo pipefail
 
-WHITELIST_FILE="${1:-/var/www/html/.ddev/claude/whitelist-domains.txt}"
+WHITELIST_FILE="${1:-${DDEV_APPROOT}/.ddev/claude/whitelist-domains.txt}"
 LOG_PREFIX="[ddev-claude]"
 
 log() { echo "$LOG_PREFIX $*"; }

@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 ## Description: Run Claude CLI with firewall protection
 ## Usage: claude [flags] [args]
 ## Example: "ddev claude --help"
@@ -13,7 +14,7 @@ if [[ "$1" == "--no-firewall" ]]; then
     echo "[ddev-claude] Logging network traffic to build whitelist..."
 
     # Run wrapper script that handles tcpdump and firewall in same session
-    ddev exec -s claude /var/www/html/.ddev/claude/scripts/run-claude-no-firewall.sh "$@"
+    ddev exec -s claude "${DDEV_APPROOT}/.ddev/claude/scripts/run-claude-no-firewall.sh" "$@"
     EXIT_CODE=$?
 
     # Show accessed domains

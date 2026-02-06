@@ -1,3 +1,4 @@
+<!-- #ddev-generated -->
 ---
 name: whitelist
 description: Manage firewall whitelist for ddev-claude. Use when blocked requests occur or user asks about network access.
@@ -11,8 +12,8 @@ You are running inside a ddev-claude container with a network firewall. Outbound
 ## Environment
 
 - **Global config:** `~/.ddev/ddev-claude/whitelist.json`
-- **Project config:** `/var/www/html/.ddev/ddev-claude/whitelist.json`
-- **Default domains:** `/var/www/html/.ddev/claude/config/default-whitelist.json`
+- **Project config:** `$DDEV_APPROOT/.ddev/ddev-claude/whitelist.json`
+- **Default domains:** `$DDEV_APPROOT/.ddev/claude/config/default-whitelist.json`
 - **Hot reload:** Config changes apply automatically in 2-3 seconds
 
 ## Detecting Firewall Blocks
@@ -53,7 +54,7 @@ dmesg | grep '\[FIREWALL-BLOCK\]' | tail -10
 
 Extract blocked IPs and attempt reverse DNS:
 ```bash
-/var/www/html/.ddev/claude/scripts/parse-blocked-domains.sh
+$DDEV_APPROOT/.ddev/claude/scripts/parse-blocked-domains.sh
 ```
 
 ## Adding Domains to Whitelist
@@ -86,8 +87,8 @@ echo -e "$current\nnew-domain.com" | sort -u | grep -v '^$' | \
 ```bash
 # Remove a domain from project config
 jq 'map(select(. != "domain-to-remove.com"))' \
-  /var/www/html/.ddev/ddev-claude/whitelist.json > /tmp/whitelist.json && \
-  mv /tmp/whitelist.json /var/www/html/.ddev/ddev-claude/whitelist.json
+  $DDEV_APPROOT/.ddev/ddev-claude/whitelist.json > /tmp/whitelist.json && \
+  mv /tmp/whitelist.json $DDEV_APPROOT/.ddev/ddev-claude/whitelist.json
 ```
 
 ## Viewing Current Whitelist
@@ -96,7 +97,7 @@ Only show whitelist when explicitly asked. Don't proactively display it.
 
 ```bash
 # Show merged whitelist (default + global + project)
-/var/www/html/.ddev/claude/scripts/merge-whitelist.sh
+$DDEV_APPROOT/.ddev/claude/scripts/merge-whitelist.sh
 ```
 
 ## Stack Templates
@@ -108,8 +109,8 @@ When you detect a project type, offer to add common domains.
 - npm: `package.json` exists
 
 **Templates available at:**
-- Laravel: `/var/www/html/.ddev/claude/config/stack-templates/laravel.json`
-- npm: `/var/www/html/.ddev/claude/config/stack-templates/npm.json`
+- Laravel: `$DDEV_APPROOT/.ddev/claude/config/stack-templates/laravel.json`
+- npm: `$DDEV_APPROOT/.ddev/claude/config/stack-templates/npm.json`
 
 **Offer:**
 "This appears to be a Laravel project. Would you like me to add the Laravel stack domains (packagist.org, repo.packagist.org)?"
@@ -118,9 +119,9 @@ To add a stack template:
 ```bash
 # Merge stack template with project config
 jq -s 'add | unique' \
-  /var/www/html/.ddev/claude/config/stack-templates/laravel.json \
-  /var/www/html/.ddev/ddev-claude/whitelist.json > /tmp/merged.json && \
-  mv /tmp/merged.json /var/www/html/.ddev/ddev-claude/whitelist.json
+  $DDEV_APPROOT/.ddev/claude/config/stack-templates/laravel.json \
+  $DDEV_APPROOT/.ddev/ddev-claude/whitelist.json > /tmp/merged.json && \
+  mv /tmp/merged.json $DDEV_APPROOT/.ddev/ddev-claude/whitelist.json
 ```
 
 ## Wildcard Domains

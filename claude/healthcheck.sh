@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 set -e
 
 LOG_PREFIX="[ddev-claude-healthcheck]"

@@ -1,4 +1,5 @@
 #!/bin/bash
+#ddev-generated
 set -euo pipefail
 
 # Parse blocked domains from iptables LOG
