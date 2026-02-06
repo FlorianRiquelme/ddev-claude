@@ -9,8 +9,14 @@ BLOCKED_LOG="/tmp/ddev-claude-blocked.log"
 log() { echo "$LOG_PREFIX $*"; }
 error() { echo "$LOG_PREFIX ERROR: $*" >&2; }
 
+fail_closed() {
+    error "Firewall initialization failed - blocking all traffic"
+    iptables -P OUTPUT DROP 2>/dev/null || true
+    exit 1
+}
+
 # Error trap - fail closed
-trap 'error "Firewall initialization failed - blocking all traffic"; exit 1' ERR
+trap fail_closed ERR
 
 log "Initializing firewall rules..."
 
