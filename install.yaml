@@ -9,6 +9,9 @@ pre_install_actions:
     #ddev-description:Validating Docker supports NET_ADMIN capability
     docker run --rm --cap-add=NET_ADMIN alpine sh -c 'exit 0' || (echo "ERROR: Docker does not support NET_ADMIN capability. This addon requires NET_ADMIN for iptables firewall management." && exit 1)
   - |
+    #ddev-description:Ensuring Claude CLI state file exists for bind mount
+    [ -f ~/.claude.json ] || echo '{}' > ~/.claude.json
+  - |
     #ddev-description:Cleaning up previous addon files for upgrade
     rm -rf .ddev/claude .ddev/commands/host/claude .ddev/commands/host/claude-whitelist
 

@@ -19,6 +19,7 @@ services:
         target: ${DDEV_APPROOT}
         consistency: cached
       - ~/.claude:/root/.claude:rw
+      - ~/.claude.json:/root/.claude.json:rw
 
     working_dir: ${DDEV_APPROOT}
 
