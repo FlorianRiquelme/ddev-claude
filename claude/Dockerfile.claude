@@ -44,5 +44,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install Claude CLI
 RUN npm install -g @anthropic-ai/claude-code
 
+# Copy hook and command scripts into stable container path
+COPY hooks/ /opt/ddev-claude/hooks/
+COPY bin/ /opt/ddev-claude/bin/
+RUN chmod +x /opt/ddev-claude/hooks/* /opt/ddev-claude/bin/*
+
 # Default command (will be overridden by entrypoint)
 CMD ["tail", "-f", "/dev/null"]

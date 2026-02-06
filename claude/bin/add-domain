@@ -1,0 +1,101 @@
+#!/bin/bash
+#ddev-generated
+#
+# add-domain - Add domain(s) to the firewall whitelist
+#
+# Usage: add-domain <domain> [domain2] [domain3] ...
+#
+# Called by Claude after user approval. Adds domains to the project
+# whitelist JSON, resolves IPs, and updates the ipset firewall in real time.
+
+set -euo pipefail
+
+LOG_PREFIX="[ddev-claude]"
+log() { echo "$LOG_PREFIX $*"; }
+error() { echo "$LOG_PREFIX ERROR: $*" >&2; }
+
+if [[ -z "${DDEV_APPROOT:-}" ]]; then
+    error "DDEV_APPROOT is not set"
+    exit 1
+fi
+
+PROJECT_CONFIG="${DDEV_APPROOT}/.ddev/ddev-claude/whitelist.json"
+CACHE_FILE="/tmp/ddev-claude-merged-whitelist.txt"
+
+if [[ $# -eq 0 ]]; then
+    error "Usage: add-domain <domain> [domain2] ..."
+    exit 1
+fi
+
+# Validate domain format (alphanumeric, dots, hyphens — no bare IPs)
+validate_domain() {
+    local domain="$1"
+    if [[ ! "$domain" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]]; then
+        error "Invalid domain format: $domain"
+        return 1
+    fi
+    # Reject bare IPs
+    if [[ "$domain" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        error "Bare IP addresses not allowed, use a domain name: $domain"
+        return 1
+    fi
+    # Must contain at least one dot
+    if [[ ! "$domain" =~ \. ]]; then
+        error "Invalid domain (no TLD): $domain"
+        return 1
+    fi
+    return 0
+}
+
+# Ensure project config directory and file exist
+if [[ ! -f "$PROJECT_CONFIG" ]]; then
+    mkdir -p "$(dirname "$PROJECT_CONFIG")"
+    echo '[]' > "$PROJECT_CONFIG"
+    log "Created project whitelist at $PROJECT_CONFIG"
+fi
+
+for domain in "$@"; do
+    # Validate
+    if ! validate_domain "$domain"; then
+        continue
+    fi
+
+    # Add to project whitelist JSON (atomic write)
+    tmp_json=$(mktemp)
+    if jq --arg d "$domain" '. + [$d] | unique' "$PROJECT_CONFIG" > "$tmp_json" 2>/dev/null; then
+        mv "$tmp_json" "$PROJECT_CONFIG"
+        log "Added '$domain' to project whitelist"
+    else
+        error "Failed to update JSON for $domain"
+        rm -f "$tmp_json"
+        continue
+    fi
+
+    # Resolve domain to IPs
+    ips=$(dig +short +time=2 +tries=3 A "$domain" 2>/dev/null | grep -E '^[0-9]+\.' || true)
+    if [[ -z "$ips" ]]; then
+        error "Could not resolve $domain — domain added to config but no IPs whitelisted"
+        # Still add to cache so the hook allows it (ipset will block at network level
+        # until DNS resolves, but the hook won't deny the retry)
+    else
+        # Add each IP to ipset
+        while IFS= read -r ip; do
+            if ipset add -exist whitelist_ips "$ip" timeout 3600 2>/dev/null; then
+                log "Whitelisted IP $ip ($domain)"
+            else
+                error "Failed to add IP $ip to ipset"
+            fi
+        done <<< "$ips"
+    fi
+
+    # Update cache file
+    if [[ -f "$CACHE_FILE" ]]; then
+        if ! grep -qFx "$domain" "$CACHE_FILE" 2>/dev/null; then
+            echo "$domain" >> "$CACHE_FILE"
+        fi
+    else
+        echo "$domain" > "$CACHE_FILE"
+    fi
+done
+
+log "Done. Domain(s) whitelisted and firewall updated."

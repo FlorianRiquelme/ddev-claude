@@ -114,6 +114,12 @@ ip_count=$(ipset list whitelist_ips 2>/dev/null | grep -c "^[0-9]" || echo 0)
 log "Firewall initialized successfully ($ip_count IPs whitelisted)"
 log "If you see 'Network request BLOCKED' messages, run 'ddev claude:whitelist' or use /whitelist skill"
 
+# Register Claude Code hooks for domain whitelisting UX
+log "Registering Claude Code hooks..."
+"$SCRIPT_DIR/scripts/generate-settings.sh" || {
+    log "WARNING: Failed to register hooks (continuing without hooks)"
+}
+
 # Start config file watcher in background
 log "Starting config file watcher..."
 "$SCRIPT_DIR/scripts/watch-config.sh" &

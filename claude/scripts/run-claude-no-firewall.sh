@@ -46,5 +46,8 @@ sleep 0.5
 iptables -F OUTPUT
 iptables -P OUTPUT ACCEPT
 
+# Tell hooks to passthrough (no firewall = no blocking)
+export DDEV_CLAUDE_NO_FIREWALL=1
+
 # Run claude with all passed arguments
 claude "$@"

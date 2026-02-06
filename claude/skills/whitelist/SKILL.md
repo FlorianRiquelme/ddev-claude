@@ -16,71 +16,51 @@ You are running inside a ddev-claude container with a network firewall. Outbound
 - **Default domains:** `$DDEV_APPROOT/.ddev/claude/config/default-whitelist.json`
 - **Hot reload:** Config changes apply automatically in 2-3 seconds
 
-## Detecting Firewall Blocks
+## How Domain Blocking Works
 
-When network requests fail, check if the firewall blocked them:
+A PreToolUse hook automatically intercepts tool calls (WebFetch, Bash, MCP tools) and checks if the target domain is in the firewall whitelist. If a domain is not whitelisted:
+
+1. The hook **denies** the tool call before it reaches the network
+2. You receive a message with the blocked domain and an `add-domain` command
+3. **Ask the user** if they'd like to whitelist the domain
+4. If approved, run the provided `add-domain` command
+5. Retry the original tool call — it will succeed
+
+This means you don't need to manually detect blocks. The hook tells you proactively.
+
+### Fallback Detection
+
+If hooks are not active (e.g., older container), check for blocks manually:
 
 1. Look for "[ddev-claude] Network request BLOCKED" messages in the terminal
 2. Or check dmesg: `dmesg | grep FIREWALL-BLOCK | tail -5`
 3. Or run: `ddev claude:whitelist` to see blocked domains interactively
 
-Common symptoms of firewall blocks:
-- "Connection refused" errors
-- "Network unreachable" errors
-- Timeouts to external APIs
-- Package manager failures (composer, npm)
-
-When you see these errors, check for blocks before troubleshooting other causes.
-
-## Proactive Block Check
-
-Before attempting external requests, you can inform the user:
-
-"I'm about to access [domain]. If this fails, it might be blocked by the firewall.
-Check for '[ddev-claude] Network request BLOCKED' messages or run 'ddev claude:whitelist'."
-
-## Detecting Blocked Requests
-
-When you see errors like:
-- "Connection refused"
-- "Could not resolve host"
-- "Network is unreachable"
-- "Connection timed out"
-
-Check for blocked requests:
-```bash
-dmesg | grep '\[FIREWALL-BLOCK\]' | tail -10
-```
-
-Extract blocked IPs and attempt reverse DNS:
-```bash
-$DDEV_APPROOT/.ddev/claude/scripts/parse-blocked-domains.sh
-```
-
 ## Adding Domains to Whitelist
 
-**ALWAYS ask for user confirmation before editing whitelist files.**
+**ALWAYS ask for user confirmation before whitelisting domains.**
 
 1. Explain why the domain is needed:
    - "I need access to api.example.com to fetch the API documentation"
    - "registry.npmjs.org is required for npm package installation"
 
-2. Ask which config to use:
-   - **Global config** for common tools (npm, composer, github)
-   - **Project config** for project-specific APIs
-
-3. After confirmation, add the domain:
+2. After confirmation, use the `add-domain` command:
 ```bash
-# Read current domains
-current=$(jq -r '.[]' ~/.ddev/ddev-claude/whitelist.json 2>/dev/null)
+# Add a single domain
+/opt/ddev-claude/bin/add-domain api.example.com
 
-# Add new domain and write back
-echo -e "$current\nnew-domain.com" | sort -u | grep -v '^$' | \
-  jq -R -s 'split("\n") | map(select(length > 0))' > ~/.ddev/ddev-claude/whitelist.json
+# Add multiple domains at once
+/opt/ddev-claude/bin/add-domain api.example.com cdn.example.com
 ```
 
-4. Confirm reload (happens automatically):
-   - "Domain added. Hot reload will apply in 2-3 seconds."
+This command:
+- Validates the domain format
+- Adds it to the project whitelist (`.ddev/ddev-claude/whitelist.json`)
+- Resolves the domain to IPs and updates the firewall immediately
+- Updates the hook cache so subsequent tool calls are allowed
+
+3. For global config (common tools across all projects), manually edit:
+   - `~/.ddev/ddev-claude/whitelist.json`
 
 ## Removing Domains
 

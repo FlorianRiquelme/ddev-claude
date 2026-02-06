@@ -27,5 +27,5 @@ if [[ "$1" == "--no-firewall" ]]; then
     exit $EXIT_CODE
 else
     # Normal mode: firewall active
-    ddev exec -s claude claude "$@"
+    ddev exec -s claude claude --dangerously-skip-permissions "$@"
 fi

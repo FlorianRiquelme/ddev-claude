@@ -103,6 +103,18 @@ The interactive whitelist manager:
 5. Asks whether to save to global or per-project config
 6. Hot reload applies the changes within 2-3 seconds -- no restart needed
 
+### Automatic Domain Approval
+
+When Claude tries to access a domain that is not whitelisted, the addon intercepts the request before it executes:
+
+1. A **PreToolUse hook** inspects every tool call (WebFetch, Bash commands containing URLs, MCP tool inputs) and checks extracted domains against the current whitelist
+2. If the domain is not whitelisted, the hook **denies the tool call** and tells Claude which domain was blocked
+3. Claude sees the denial and asks you in plain language whether you want to whitelist the domain
+4. If you approve, Claude runs `/opt/ddev-claude/bin/add-domain <domain>`, which immediately updates the whitelist JSON and the live firewall rules
+5. Claude retries the original request and succeeds
+
+This gives you a conversational approval flow without leaving the CLI. The hook is a UX layer -- the kernel-level iptables firewall remains the security foundation. Even if the hook were bypassed, the firewall would still DROP unauthorized traffic.
+
 ## Configuration
 
 ### Whitelist Hierarchy
@@ -221,6 +233,10 @@ The Dockerfile installs Node.js (LTS), PHP, Composer, Claude CLI, gum, iptables,
 
 This addon creates a separate `claude` container. Your web container's network, packages, and configuration are completely unaffected. You can remove the addon at any time with no side effects on your project.
 
+### Hooks only detect explicit URLs
+
+The PreToolUse hook extracts URLs from tool calls -- WebFetch URLs, URLs in Bash commands, URLs in MCP tool inputs. It does not detect implicit network access from commands like `npm install` or `composer require` that do not contain URLs. For those, the iptables firewall still blocks unauthorized traffic and the blocked-request log captures the attempt. Use `ddev claude:whitelist` to whitelist domains from the blocked log.
+
 ### Firewall fails closed
 
 If firewall initialization fails for any reason -- DNS issues, iptables errors, missing config files -- the entrypoint blocks ALL outbound traffic and exits with an error. This is by design. The system fails safe rather than failing open.
@@ -287,6 +303,7 @@ Mounts:
 - **Real host path mount** -- The project is mounted at `${DDEV_APPROOT}` (the actual path on your host), not at `/var/www/html`. This ensures Claude's file references match your local paths.
 - **ipset for IP management** -- Efficient O(1) lookups for whitelisted IPs, with built-in timeout support for automatic expiry and refresh.
 - **Fail-closed error handling** -- The entrypoint uses `trap ... ERR` to block all traffic if any setup step fails.
+- **Claude Code hooks** -- PreToolUse hooks intercept tool calls before execution, check domains against the whitelist, and guide users through approval. The hooks are a UX improvement; iptables remains the security enforcement layer.
 - **Healthcheck every 30s** -- Validates firewall state continuously. If the healthcheck fails, Docker marks the container as unhealthy.
 
 ## Removing the Addon
@@ -296,7 +313,7 @@ ddev addon remove ddev-claude
 ddev restart
 ```
 
-This removes all addon files from `.ddev/` and stops the claude container. Your project and web container are not affected.
+This removes all addon files from `.ddev/` and stops the claude container. Your original `~/.claude/settings.json` is restored from the backup the addon created on first run. Your project and web container are not affected.
 
 ## Contributing
 

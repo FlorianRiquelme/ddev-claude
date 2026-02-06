@@ -65,4 +65,9 @@ sources+=("$(get_json_content "$GLOBAL_CONFIG")")
 sources+=("$(get_json_content "$PROJECT_CONFIG")")
 
 # Merge all sources and output unique domains
-printf '%s\n' "${sources[@]}" | jq -s 'add | unique | .[]' -r
+CACHE_FILE="/tmp/ddev-claude-merged-whitelist.txt"
+merged_output=$(printf '%s\n' "${sources[@]}" | jq -s 'add | unique | .[]' -r)
+echo "$merged_output"
+tmp_cache=$(mktemp)
+echo "$merged_output" > "$tmp_cache"
+mv "$tmp_cache" "$CACHE_FILE"
