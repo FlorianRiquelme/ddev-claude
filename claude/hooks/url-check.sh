@@ -70,8 +70,8 @@ extract_domains() {
             fi
 
             # Special-case: allow add-domain when it's the sole command
-            # Anchored to prevent compound commands like "curl evil.com; /opt/ddev-claude/bin/add-domain foo"
-            if echo "$cmd" | grep -qE '^\s*/opt/ddev-claude/bin/add-domain\s'; then
+            # Anchored start and end; reject shell metacharacters to prevent chaining
+            if echo "$cmd" | grep -qE '^\s*/opt/ddev-claude/bin/add-domain\s+[^ ;|&$()`]+(\s+[^ ;|&$()`]+)*\s*$'; then
                 echo "__ALLOW_ADD_DOMAIN__"
                 return
             fi

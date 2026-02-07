@@ -120,6 +120,15 @@ log "Registering Claude Code hooks..."
     log "WARNING: Failed to register hooks (continuing without hooks)"
 }
 
+# Merge denylist and scan for secret files
+log "Initializing secret file protection..."
+"$SCRIPT_DIR/scripts/merge-denylist.sh" > /dev/null 2>&1 || {
+    log "WARNING: Failed to merge denylist (continuing without secret pattern cache)"
+}
+"$SCRIPT_DIR/scripts/check-secrets.sh" || {
+    log "WARNING: Secret scan failed (continuing without secret protection warnings)"
+}
+
 # Start config file watcher in background
 log "Starting config file watcher..."
 "$SCRIPT_DIR/scripts/watch-config.sh" &

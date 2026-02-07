@@ -14,16 +14,30 @@ error() { echo "$LOG_PREFIX ERROR: $*" >&2; }
 
 SETTINGS_FILE="/root/.claude/settings.json"
 BACKUP_FILE="/root/.claude/settings.json.ddev-backup"
-HOOK_COMMAND="/opt/ddev-claude/hooks/url-check.sh"
+HOOK_COMMAND_URL="/opt/ddev-claude/hooks/url-check.sh"
+HOOK_COMMAND_SECRET="/opt/ddev-claude/hooks/secret-check.sh"
 
-# Our hook config to inject
-HOOK_CONFIG=$(cat <<'HOOKJSON'
+# Hook configs to inject
+HOOK_CONFIG_URL=$(cat <<'HOOKJSON'
 {
   "matcher": "WebFetch|Bash|mcp__.*",
   "hooks": [
     {
       "type": "command",
       "command": "/opt/ddev-claude/hooks/url-check.sh"
+    }
+  ]
+}
+HOOKJSON
+)
+
+HOOK_CONFIG_SECRET=$(cat <<'HOOKJSON'
+{
+  "matcher": "Read|Edit|Write|Bash",
+  "hooks": [
+    {
+      "type": "command",
+      "command": "/opt/ddev-claude/hooks/secret-check.sh"
     }
   ]
 }
@@ -40,10 +54,23 @@ else
     existing='{}'
 fi
 
-# Check if our hook is already registered (idempotent)
-if echo "$existing" | jq -e --arg cmd "$HOOK_COMMAND" \
+# Check which hooks need registration (idempotent)
+needs_url=true
+needs_secret=true
+
+if echo "$existing" | jq -e --arg cmd "$HOOK_COMMAND_URL" \
     '.hooks.PreToolUse // [] | map(.hooks // []) | flatten | map(select(.command == $cmd)) | length > 0' \
     > /dev/null 2>&1; then
+    needs_url=false
+fi
+
+if echo "$existing" | jq -e --arg cmd "$HOOK_COMMAND_SECRET" \
+    '.hooks.PreToolUse // [] | map(.hooks // []) | flatten | map(select(.command == $cmd)) | length > 0' \
+    > /dev/null 2>&1; then
+    needs_secret=false
+fi
+
+if [[ "$needs_url" == "false" && "$needs_secret" == "false" ]]; then
     log "Hooks already registered in settings.json"
     exit 0
 fi
@@ -54,12 +81,26 @@ if [[ -f "$SETTINGS_FILE" && ! -f "$BACKUP_FILE" ]]; then
     log "Backed up settings.json to settings.json.ddev-backup"
 fi
 
-# Deep-merge: append our hook entry to existing PreToolUse array
-merged=$(echo "$existing" | jq --argjson hook "$HOOK_CONFIG" '
-    .hooks //= {} |
-    .hooks.PreToolUse //= [] |
-    .hooks.PreToolUse += [$hook]
-')
+# Deep-merge: append missing hook entries to existing PreToolUse array
+merged="$existing"
+
+if [[ "$needs_url" == "true" ]]; then
+    merged=$(echo "$merged" | jq --argjson hook "$HOOK_CONFIG_URL" '
+        .hooks //= {} |
+        .hooks.PreToolUse //= [] |
+        .hooks.PreToolUse += [$hook]
+    ')
+    log "Adding url-check hook"
+fi
+
+if [[ "$needs_secret" == "true" ]]; then
+    merged=$(echo "$merged" | jq --argjson hook "$HOOK_CONFIG_SECRET" '
+        .hooks //= {} |
+        .hooks.PreToolUse //= [] |
+        .hooks.PreToolUse += [$hook]
+    ')
+    log "Adding secret-check hook"
+fi
 
 # Ensure settings directory exists
 mkdir -p "$(dirname "$SETTINGS_FILE")"
@@ -69,4 +110,4 @@ tmp_settings=$(mktemp)
 echo "$merged" > "$tmp_settings"
 mv "$tmp_settings" "$SETTINGS_FILE"
 
-log "Registered PreToolUse hook in settings.json"
+log "Registered PreToolUse hooks in settings.json"
