@@ -64,8 +64,14 @@ inotifywait -m -e close_write,moved_to \
     "$(dirname "$GLOBAL_CONFIG")" \
     "$(dirname "$PROJECT_CONFIG")" 2>/dev/null | \
 while read -r dir action file; do
-    # Only react to whitelist.json files
-    [[ "$file" != "whitelist.json" ]] && continue
+    # Only react to whitelist.json or denylist.json files
+    case "$file" in
+        whitelist.json|denylist.json)
+            ;; # continue processing
+        *)
+            continue
+            ;;
+    esac
 
     now=$(date +%s)
 
@@ -81,14 +87,26 @@ while read -r dir action file; do
     # Validate JSON before reloading
     config_path="$dir$file"
     if ! jq empty < "$config_path" 2>/dev/null; then
-        warn "Invalid JSON in $config_path - keeping previous whitelist"
+        warn "Invalid JSON in $config_path - keeping previous config"
         continue
     fi
 
-    # Reload whitelist
-    if "$SCRIPT_DIR/scripts/reload-whitelist.sh"; then
-        log "Reload successful"
-    else
-        warn "Reload failed - firewall unchanged"
-    fi
+    case "$file" in
+        whitelist.json)
+            # Reload whitelist (resolves domains, updates iptables)
+            if "$SCRIPT_DIR/scripts/reload-whitelist.sh"; then
+                log "Whitelist reload successful"
+            else
+                warn "Whitelist reload failed - firewall unchanged"
+            fi
+            ;;
+        denylist.json)
+            # Regenerate denylist cache (no iptables changes needed)
+            if "$SCRIPT_DIR/scripts/merge-denylist.sh" > /dev/null 2>&1; then
+                log "Denylist cache regenerated"
+            else
+                warn "Denylist merge failed - keeping previous patterns"
+            fi
+            ;;
+    esac
 done

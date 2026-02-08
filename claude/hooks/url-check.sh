@@ -70,15 +70,15 @@ extract_domains() {
             fi
 
             # Special-case: allow add-domain when it's the sole command
-            # Anchored to prevent compound commands like "curl evil.com; /opt/ddev-claude/bin/add-domain foo"
-            if echo "$cmd" | grep -qE '^\s*/opt/ddev-claude/bin/add-domain\s'; then
+            # Anchored start and end; reject shell metacharacters to prevent chaining
+            if echo "$cmd" | grep -qE '^\s*/opt/ddev-claude/bin/add-domain\s+[^ ;|&$()`]+(\s+[^ ;|&$()`]+)*\s*$'; then
                 echo "__ALLOW_ADD_DOMAIN__"
                 return
             fi
 
             # Extract URLs from command string
             local urls
-            urls=$(echo "$cmd" | grep -oE 'https?://[^ "'"'"'|;&)<>]+' || true)
+            urls=$(echo "$cmd" | grep -oE "https?://[^ \"'|;&)<>]+" || true)
             for u in $urls; do
                 local host
                 host=$(echo "$u" | sed -E 's|^https?://||; s|[/:?#].*||')
@@ -90,7 +90,7 @@ extract_domains() {
         mcp__*)
             # Recursively extract URLs from all JSON string values
             local urls
-            urls=$(echo "$tool_input" | jq -r '.. | strings' 2>/dev/null | grep -oE 'https?://[^ "'"'"'|;&)<>]+' || true)
+            urls=$(echo "$tool_input" | jq -r '.. | strings' 2>/dev/null | grep -oE "https?://[^ \"'|;&)<>]+" || true)
             for u in $urls; do
                 local host
                 host=$(echo "$u" | sed -E 's|^https?://||; s|[/:?#].*||')
@@ -140,7 +140,7 @@ add_cmd="/opt/ddev-claude/bin/add-domain $(printf '%s ' "${blocked_domains[@]}" 
 
 deny_reason=$(cat <<EOF
 Domain(s) not in the firewall whitelist: ${blocked_list}
-Ask the user if they'd like to whitelist $([ ${#blocked_domains[@]} -eq 1 ] && echo "it" || echo "them").
+Ask the user if they would like to whitelist $([ ${#blocked_domains[@]} -eq 1 ] && echo "it" || echo "them").
 If yes, run: ${add_cmd}
 EOF
 )

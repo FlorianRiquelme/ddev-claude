@@ -1,0 +1,14 @@
+{
+  "deny": [
+    ".env", ".env.*",
+    "*.pem", "*.key", "*.p12", "*.pfx",
+    "id_rsa*", "id_ed25519*", "id_ecdsa*", "id_dsa*",
+    "*.keystore", "*.jks",
+    ".npmrc", ".netrc", ".htpasswd", ".pgpass",
+    ".vault-token", "vault.yml", "secrets.yml", "secrets.yaml",
+    "*.secret", "*.secrets"
+  ],
+  "allow": [
+    ".env.example", ".env.dist"
+  ]
+}

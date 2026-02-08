@@ -37,7 +37,7 @@ removal_actions:
       rm -f ~/.claude/settings.json.ddev-backup
     elif [ -f ~/.claude/settings.json ]; then
       # Remove our hook entry even without backup
-      jq 'if .hooks?.PreToolUse then .hooks.PreToolUse |= map(select(.hooks | all(.command != "/opt/ddev-claude/hooks/url-check.sh"))) | if .hooks.PreToolUse == [] then del(.hooks.PreToolUse) else . end | if .hooks == {} then del(.hooks) else . end else . end' ~/.claude/settings.json > /tmp/ddev-claude-settings-clean.json && mv /tmp/ddev-claude-settings-clean.json ~/.claude/settings.json || true
+      jq 'if .hooks?.PreToolUse then .hooks.PreToolUse |= map(select(.hooks | all(.command | startswith("/opt/ddev-claude/") | not))) | if .hooks.PreToolUse == [] then del(.hooks.PreToolUse) else . end | if .hooks == {} then del(.hooks) else . end else . end' ~/.claude/settings.json > /tmp/ddev-claude-settings-clean.json && mv /tmp/ddev-claude-settings-clean.json ~/.claude/settings.json || true
     fi
   - |
     #ddev-description:Removing addon files
