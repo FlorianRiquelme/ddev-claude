@@ -315,6 +315,18 @@ ddev restart
 
 This removes all addon files from `.ddev/` and stops the claude container. Your original `~/.claude/settings.json` is restored from the backup the addon created on first run. Your project and web container are not affected.
 
+## Testing
+
+This repository includes Bats tests for shell hooks and scripts.
+
+```bash
+./tests/run-bats.sh
+# or directly:
+bats ./tests/test.bats
+```
+
+If `bats` is missing, install `bats-core` and rerun the command.
+
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request on [GitHub](https://github.com/florianriquelme/ddev-claude).
