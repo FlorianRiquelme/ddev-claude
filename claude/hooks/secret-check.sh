@@ -157,16 +157,7 @@ case "$tool_name" in
                     deny_access "$local_path"
                 fi
             fi
-        done < <(echo "$cmd" | grep -oE '(cat|head|tail|less|more|grep|sed|awk|source|\.)\s+[^ |;&>]+' || true)
-
-        # Also check for direct file references that match secret patterns
-        # e.g., "cat .env" or "cp .env /tmp/"
-        while IFS= read -r word; do
-            [[ -z "$word" ]] && continue
-            if check_path "$word"; then
-                deny_access "$word"
-            fi
-        done < <(echo "$cmd" | tr ' ' '\n' | grep -v '^-' || true)
+        done < <(echo "$cmd" | grep -oE '(cat|head|tail|less|more|grep|sed|awk|source|\.|cp|mv)\s+[^ |;&>]+' || true)
         ;;
 esac
 
