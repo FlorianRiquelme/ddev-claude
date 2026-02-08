@@ -13,7 +13,7 @@ teardown() {
 
 run_hook() {
   local payload="$1"
-  run bash -c "printf '%s' \"$payload\" | \"$REPO_ROOT/claude/hooks/url-check.sh\""
+  run bash -c 'printf "%s" "$1" | "$2"' _ "$payload" "$REPO_ROOT/claude/hooks/url-check.sh"
 }
 
 @test "allows non-network tools without output" {
