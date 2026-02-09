@@ -22,6 +22,8 @@ services:
       - ~/.claude.json:/root/.claude.json:rw
       - ~/.claude:/home/claude/.claude:rw
       - ~/.claude.json:/home/claude/.claude.json:rw
+      # Keep host-absolute plugin install paths valid inside container
+      - ${HOME}/.claude:${HOME}/.claude:rw
 
     working_dir: ${DDEV_APPROOT}
 
