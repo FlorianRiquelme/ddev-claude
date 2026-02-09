@@ -81,7 +81,7 @@ extract_mcp_domains() {
 
     # Extract hostnames from URLs, filter localhost, deduplicate
     echo "$domains" \
-        | grep -oP '://\K[^/:?]+' 2>/dev/null \
+        | sed -E 's#^[a-zA-Z]+://##; s#[:/?].*$##' \
         | grep -v -E '^(localhost|127\.0\.0\.1|0\.0\.0\.0)$' \
         | sort -u \
         || true

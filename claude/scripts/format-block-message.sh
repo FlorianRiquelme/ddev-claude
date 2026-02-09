@@ -9,7 +9,7 @@ touch "$SEEN_IPS"
 dmesg -w 2>/dev/null | while read -r line; do
     if [[ "$line" == *"[FIREWALL-BLOCK]"* ]]; then
         # Extract DST IP
-        dst_ip=$(echo "$line" | grep -oP 'DST=\K[0-9.]+')
+        dst_ip=$(echo "$line" | sed -n 's/.*DST=\([0-9.]*\).*/\1/p')
 
         if [[ -z "$dst_ip" ]]; then
             continue
