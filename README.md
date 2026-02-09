@@ -197,6 +197,23 @@ If an MCP server reports authentication errors, the cause is almost always a fir
 
 ## Pitfalls and Troubleshooting
 
+### Git says "Author identity unknown"
+
+`ddev claude` runs Git inside the `claude` container. This addon bind-mounts your host Git global config (`~/.gitconfig` and `~/.config/git`) into that container, so globally configured `user.name` and `user.email` are available automatically.
+
+If you still see identity errors, verify on host:
+
+```bash
+git config --global user.name
+git config --global user.email
+```
+
+Then restart the addon container to refresh mounts:
+
+```bash
+ddev restart
+```
+
 ### "Connection refused" or "needs authentication" from MCP servers
 
 This is usually a firewall block, not an auth issue. The server's outbound HTTP request is being dropped. Add the target domain to your whitelist (global or per-project) and the hot reload will apply it within seconds.

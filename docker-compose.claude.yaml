@@ -20,6 +20,8 @@ services:
         consistency: cached
       - ~/.claude:/root/.claude:rw
       - ~/.claude.json:/root/.claude.json:rw
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - ~/.config/git:/root/.config/git:ro
 
     working_dir: ${DDEV_APPROOT}
 
