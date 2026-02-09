@@ -51,15 +51,14 @@ Then restart: `ddev restart`.
 ### Basic
 
 ```bash
-# Start Claude with firewall active
+# Start Claude with firewall protection
 ddev claude
-
-# Autonomous mode with firewall protection
-ddev claude --dangerously-skip-permissions
 
 # Pass any Claude CLI flags
 ddev claude --help
 ```
+
+> **Note:** `ddev claude` always enables `--dangerously-skip-permissions` automatically. The firewall makes this safe by blocking unauthorized outbound traffic. You do not need to pass the flag yourself.
 
 ### No-Firewall Mode
 
@@ -170,7 +169,7 @@ The addon ships with these domains pre-whitelisted in `default-whitelist.json`:
 Reference templates are available in `.ddev/claude/config/stack-templates/`:
 
 - `npm.json` -- adds `registry.npmjs.org`, `registry.yarnpkg.com`, GitHub
-- `laravel.json` -- adds `packagist.org`, `repo.packagist.org`, GitHub
+- `laravel.json` -- adds `packagist.org`, `repo.packagist.org`, `raw.githubusercontent.com`, GitHub
 
 Use these as a starting point when building your own whitelist files.
 
@@ -217,9 +216,9 @@ Whitelisted IPs are added with a 3600-second timeout in ipset. The hot-reload wa
 
 All iptables rules and ipset entries are rebuilt from config files on every container start. Manual changes to iptables inside the container do not persist across `ddev restart`.
 
-### `--no-firewall` captures DNS responses, not queries
+### `--no-firewall` relies on DNS traffic
 
-The tcpdump capture monitors DNS response traffic on port 53. In rare cases where DNS results are cached, some domains may not appear in the session log. Run `ddev claude:whitelist` to also check the firewall's blocked-request log for any domains that were missed.
+The tcpdump capture monitors all traffic on port 53 (queries and responses). In rare cases where DNS results are cached, some domains may not appear in the session log. Run `ddev claude:whitelist` to also check the firewall's blocked-request log for any domains that were missed.
 
 ### Localhost MCP servers do not work
 
@@ -261,7 +260,7 @@ The healthcheck runs every 30 seconds and validates:
 
 1. iptables rules are loaded
 2. OUTPUT policy is DROP
-3. The `whitelist_ips` ipset exists and has entries
+3. The `whitelist_ips` ipset exists (warns if empty, but does not fail)
 4. Non-whitelisted traffic is actively blocked (tested against a reserved IP range)
 
 ## Architecture
@@ -291,9 +290,12 @@ The healthcheck runs every 30 seconds and validates:
 +---------------------------------------------------------------+
 
 Mounts:
-  ${DDEV_APPROOT}  -->  ${DDEV_APPROOT}   (project files, real host path)
-  ~/.claude/       -->  /home/claude/.claude/     (persistent sessions)
-  ~/.claude.json   -->  /home/claude/.claude.json (Claude config + MCP servers)
+  ${DDEV_APPROOT}  -->  ${DDEV_APPROOT}            (project files, real host path)
+  ~/.claude/       -->  /root/.claude/              (persistent sessions)
+                   -->  /home/claude/.claude/
+                   -->  ${HOME}/.claude/            (host-absolute plugin paths)
+  ~/.claude.json   -->  /root/.claude.json          (Claude config + MCP servers)
+                   -->  /home/claude/.claude.json
 ```
 
 **Key design decisions:**
@@ -313,7 +315,7 @@ ddev addon remove ddev-claude
 ddev restart
 ```
 
-This removes all addon files from `.ddev/` and stops the claude container. Your original `~/.claude/settings.json` is restored from the backup the addon created on first run. Your project and web container are not affected.
+This removes all addon files from `.ddev/` and stops the claude container. The addon's PreToolUse hooks are removed from `.claude/settings.local.json` and `~/.claude/settings.json`. Your project and web container are not affected.
 
 ## Testing
 
