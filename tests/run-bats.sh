@@ -12,4 +12,4 @@ if ! command -v bats >/dev/null 2>&1; then
 fi
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-bats "$repo_root/tests/test.bats"
+bats "$repo_root/tests/"*.bats

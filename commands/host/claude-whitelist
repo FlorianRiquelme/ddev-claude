@@ -29,7 +29,7 @@ blocked=$(ddev exec -s claude "${DDEV_APPROOT}/.ddev/claude/scripts/parse-blocke
 accessed=$(ddev exec -s claude cat /tmp/ddev-claude-accessed.log 2>/dev/null || echo "")
 
 # Combine and deduplicate
-all_domains=$(echo -e "${blocked}\n${accessed}" | grep -v '^$' | sort -u)
+all_domains=$(echo -e "${blocked}\n${accessed}" | grep -v '^$' | sort -u || true)
 
 if [[ -z "$all_domains" ]]; then
     echo "No blocked or accessed domains found."

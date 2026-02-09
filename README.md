@@ -317,16 +317,13 @@ This removes all addon files from `.ddev/` and stops the claude container. Your 
 
 ## Testing
 
-This repository includes Bats tests for shell hooks and scripts.
+The addon is covered by a Bats test suite across hooks, host commands, core scripts, and script syntax.
 
 ```bash
 ./tests/run-bats.sh
-# or directly:
-bats ./tests/test.bats
 ```
 
 If `bats` is missing, install `bats-core` and rerun the command.
-
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request on [GitHub](https://github.com/florianriquelme/ddev-claude).
