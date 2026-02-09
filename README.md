@@ -323,6 +323,7 @@ The addon is covered by a Bats test suite across hooks, host commands, core scri
 ./tests/run-bats.sh
 ```
 
+If `bats` is missing, install `bats-core` and rerun the command.
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request on [GitHub](https://github.com/florianriquelme/ddev-claude).
