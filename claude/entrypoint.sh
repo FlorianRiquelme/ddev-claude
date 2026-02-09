@@ -59,8 +59,9 @@ fi
 # 6b. Auto-whitelist MCP server domains from user config
 extract_mcp_domains() {
     local domains=""
-    local mcp_json="/root/.mcp.json"
-    local claude_json="/root/.claude.json"
+    local claude_home="${CLAUDE_HOME:-/root}"
+    local mcp_json="${claude_home}/.mcp.json"
+    local claude_json="${claude_home}/.claude.json"
     local project_mcp="${DDEV_APPROOT}/.mcp.json"
 
     # Tier 1: ~/.mcp.json (global)

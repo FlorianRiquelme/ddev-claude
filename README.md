@@ -292,8 +292,8 @@ The healthcheck runs every 30 seconds and validates:
 
 Mounts:
   ${DDEV_APPROOT}  -->  ${DDEV_APPROOT}   (project files, real host path)
-  ~/.claude/       -->  /root/.claude/     (persistent sessions)
-  ~/.claude.json   -->  /root/.claude.json (Claude config + MCP servers)
+  ~/.claude/       -->  /home/claude/.claude/     (persistent sessions)
+  ~/.claude.json   -->  /home/claude/.claude.json (Claude config + MCP servers)
 ```
 
 **Key design decisions:**

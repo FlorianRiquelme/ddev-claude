@@ -50,4 +50,4 @@ iptables -P OUTPUT ACCEPT
 export DDEV_CLAUDE_NO_FIREWALL=1
 
 # Run claude with all passed arguments
-claude "$@"
+"${DDEV_APPROOT}/.ddev/claude/scripts/run-as-claude.sh" claude "$@"

@@ -20,12 +20,16 @@ services:
         consistency: cached
       - ~/.claude:/root/.claude:rw
       - ~/.claude.json:/root/.claude.json:rw
+      - ~/.claude:/home/claude/.claude:rw
+      - ~/.claude.json:/home/claude/.claude.json:rw
 
     working_dir: ${DDEV_APPROOT}
 
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - DDEV_APPROOT=${DDEV_APPROOT}
+      - CLAUDE_USER=claude
+      - CLAUDE_HOME=/home/claude
 
     networks:
       - default

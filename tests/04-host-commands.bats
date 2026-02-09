@@ -22,7 +22,7 @@ EOF
   run bash "$REPO_ROOT/commands/host/claude" "--help"
 
   [ "$status" -eq 0 ]
-  run grep -c 'exec -s claude claude --dangerously-skip-permissions --help' /tmp/ddev-calls.log
+  run grep -c 'exec -s claude .*run-as-claude\.sh claude --dangerously-skip-permissions --help' /tmp/ddev-calls.log
   [ "$status" -eq 0 ]
   [ "$output" -ge 1 ]
 }

@@ -3,7 +3,7 @@
 #
 # generate-settings.sh - Register Claude Code hooks in settings.json
 #
-# Merges ddev-claude hook configuration into /root/.claude/settings.json
+# Merges ddev-claude hook configuration into $CLAUDE_HOME/.claude/settings.json
 # (bind-mounted from host ~/.claude/). Idempotent — skips if already registered.
 
 set -euo pipefail
@@ -12,8 +12,9 @@ LOG_PREFIX="[ddev-claude]"
 log() { echo "$LOG_PREFIX $*"; }
 error() { echo "$LOG_PREFIX ERROR: $*" >&2; }
 
-SETTINGS_FILE="/root/.claude/settings.json"
-BACKUP_FILE="/root/.claude/settings.json.ddev-backup"
+CLAUDE_HOME="${CLAUDE_HOME:-/root}"
+SETTINGS_FILE="${CLAUDE_HOME}/.claude/settings.json"
+BACKUP_FILE="${CLAUDE_HOME}/.claude/settings.json.ddev-backup"
 HOOK_COMMAND_URL="/opt/ddev-claude/hooks/url-check.sh"
 HOOK_COMMAND_SECRET="/opt/ddev-claude/hooks/secret-check.sh"
 
