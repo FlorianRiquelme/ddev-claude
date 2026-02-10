@@ -120,3 +120,12 @@ EOF
   [[ "$output" == *"SECRET FILES DETECTED"* ]]
   [[ "$output" == *".env"* ]]
 }
+
+@test "ddev shim points users to run through web container" {
+  status=0
+  output="$(bash "$REPO_ROOT/claude/bin/ddev" composer install 2>&1)" || status=$?
+
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"ddev is blocked inside the claude container"* ]]
+  [[ "$output" == *"ddev exec -s web composer install"* ]]
+}

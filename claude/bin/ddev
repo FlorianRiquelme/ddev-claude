@@ -1,0 +1,26 @@
+#!/bin/bash
+#ddev-generated
+set -euo pipefail
+
+LOG_PREFIX="[ddev-claude]"
+
+hint() {
+    local forwarded=""
+    if (($# > 0)); then
+        forwarded="$(printf "%q " "$@")"
+        forwarded="${forwarded% }"
+    fi
+
+    echo "$LOG_PREFIX ddev is blocked inside the claude container."
+    echo "$LOG_PREFIX Run ddev commands from the host and target the web container."
+    if [[ -n "$forwarded" ]]; then
+        echo "$LOG_PREFIX Suggested command:"
+        echo "$LOG_PREFIX   ddev exec -s web $forwarded"
+    else
+        echo "$LOG_PREFIX Example:"
+        echo "$LOG_PREFIX   ddev exec -s web php -v"
+    fi
+}
+
+hint "$@"
+exit 127

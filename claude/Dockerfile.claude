@@ -52,7 +52,8 @@ RUN useradd -m -s /bin/bash claude \
 # Copy hook and command scripts into stable container path
 COPY hooks/ /opt/ddev-claude/hooks/
 COPY bin/ /opt/ddev-claude/bin/
-RUN chmod +x /opt/ddev-claude/hooks/* /opt/ddev-claude/bin/*
+RUN chmod +x /opt/ddev-claude/hooks/* /opt/ddev-claude/bin/* \
+    && ln -sf /opt/ddev-claude/bin/ddev /usr/local/bin/ddev
 
 # Default command (will be overridden by entrypoint)
 CMD ["tail", "-f", "/dev/null"]
