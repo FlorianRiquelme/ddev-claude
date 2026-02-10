@@ -226,13 +226,19 @@ The container has its own network namespace. `localhost` inside the container re
 
 ### `ddev` commands inside claude container are deferred to web
 
-The claude container ships a `ddev` shim that always exits and tells you to run the command from the host via the web service:
+The claude container ships a `ddev` shim that always exits and tells you to run commands from the host:
 
 ```bash
+# Runtime/app commands
 ddev exec -s web <command>
+
+# Host lifecycle/project commands
+ddev start
+ddev restart
+ddev stop
 ```
 
-This avoids exposing project env plumbing inside the claude container.
+Lifecycle/project subcommands (`start`, `restart`, `stop`, `config`, etc.) run on host directly. Runtime commands are deferred to `web` via `ddev exec -s web ...`.
 
 ### First build is slow
 
@@ -316,7 +322,7 @@ Mounts:
 - **debian:bookworm-slim base** -- Minimal footprint with access to standard Debian packages for PHP, Node.js, and firewall tools.
 - **Real host path mount** -- The project is mounted at `${DDEV_APPROOT}` (the actual path on your host), not at `/var/www/html`. This ensures Claude's file references match your local paths.
 - **Masked env files** -- `${DDEV_APPROOT}/.env` and `${DDEV_APPROOT}/.ddev/.env` are replaced in the claude container with `.ddev/claude/config/empty.env`.
-- **ddev shim in claude** -- Running `ddev` inside the claude container is blocked and redirected to `ddev exec -s web ...` from the host.
+- **ddev shim in claude** -- Running `ddev` inside the claude container is blocked. Host-only subcommands are redirected to host `ddev ...`; runtime commands are redirected to `ddev exec -s web ...`.
 - **ipset for IP management** -- Efficient O(1) lookups for whitelisted IPs, with built-in timeout support for automatic expiry and refresh.
 - **Fail-closed error handling** -- The entrypoint uses `trap ... ERR` to block all traffic if any setup step fails.
 - **Claude Code hooks** -- PreToolUse hooks intercept tool calls before execution, check domains against the whitelist, and guide users through approval. The hooks are a UX improvement; iptables remains the security enforcement layer.
@@ -350,4 +356,4 @@ MIT
 
 ---
 
-**Maintained by:** [Florian Riquelme](https://github.com/florianriquelme)
+**Maintained by:** [Florian Riquelme](https://friquelme.dev) ([GitHub](https://github.com/florianriquelme))

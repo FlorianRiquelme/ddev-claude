@@ -4,23 +4,69 @@ set -euo pipefail
 
 LOG_PREFIX="[ddev-claude]"
 
-hint() {
-    local forwarded=""
-    if (($# > 0)); then
-        forwarded="$(printf "%q " "$@")"
-        forwarded="${forwarded% }"
+quote_args() {
+    if (($# == 0)); then
+        echo ""
+        return
     fi
+    local joined
+    joined="$(printf "%q " "$@")"
+    echo "${joined% }"
+}
 
+is_host_only_subcommand() {
+    local cmd="${1:-}"
+    case "$cmd" in
+        # Core lifecycle and project control commands are host-only.
+        start|stop|restart|poweroff|delete|pause|unpause|config|list|describe|debug|version|\
+        launch|auth|snapshot|snapshot-restore|add-on|addon|get|xdebug|share|\
+        import-db|export-db|import-files|export-files|logs|status|help|exec|ssh|\
+        composer|php|node|npm|npx|yarn|pnpm|mysql|mariadb|drush|wp|artisan)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+hint_host_only() {
+    local forwarded="$1"
     echo "$LOG_PREFIX ddev is blocked inside the claude container."
-    echo "$LOG_PREFIX Run ddev commands from the host and target the web container."
+    echo "$LOG_PREFIX This subcommand must run on the host."
+    echo "$LOG_PREFIX Suggested command:"
     if [[ -n "$forwarded" ]]; then
-        echo "$LOG_PREFIX Suggested command:"
-        echo "$LOG_PREFIX   ddev exec -s web $forwarded"
+        echo "$LOG_PREFIX   ddev $forwarded"
     else
-        echo "$LOG_PREFIX Example:"
-        echo "$LOG_PREFIX   ddev exec -s web php -v"
+        echo "$LOG_PREFIX   ddev start"
     fi
 }
 
-hint "$@"
-exit 127
+hint_web_exec() {
+    local forwarded="$1"
+    echo "$LOG_PREFIX ddev is blocked inside the claude container."
+    echo "$LOG_PREFIX Run runtime commands from the host via the web container."
+    echo "$LOG_PREFIX Suggested command:"
+    if [[ -n "$forwarded" ]]; then
+        echo "$LOG_PREFIX   ddev exec -s web $forwarded"
+    else
+        echo "$LOG_PREFIX   ddev exec -s web php -v"
+    fi
+    echo "$LOG_PREFIX For lifecycle commands (start/restart/stop), run ddev on host directly."
+}
+
+main() {
+    local subcommand="${1:-}"
+    local forwarded
+    forwarded="$(quote_args "$@")"
+
+    if [[ -n "$subcommand" ]] && is_host_only_subcommand "$subcommand"; then
+        hint_host_only "$forwarded"
+        exit 127
+    fi
+
+    hint_web_exec "$forwarded"
+    exit 127
+}
+
+main "$@"
