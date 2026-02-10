@@ -336,4 +336,4 @@ MIT
 
 ---
 
-**Maintained by:** [Florian Riquelme](https://github.com/florianriquelme)
+**Maintained by:** [Florian Riquelme](https://friquelme.dev) ([GitHub](https://github.com/florianriquelme))
