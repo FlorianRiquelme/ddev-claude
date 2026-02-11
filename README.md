@@ -224,6 +224,31 @@ The tcpdump capture monitors all traffic on port 53 (queries and responses). In 
 
 The container has its own network namespace. `localhost` inside the container refers to the container itself, not your host machine. Host-based stdio MCP servers (filesystem, git, etc.) are not reachable. This is a fundamental limitation of container isolation.
 
+### `ddev` commands inside claude container
+
+The claude container includes a `ddev` shim that enables Claude to run runtime commands directly while blocking lifecycle commands. This provides convenience without compromising security:
+
+**Runtime commands are auto-forwarded:**
+```bash
+# Inside claude container, these work automatically:
+ddev php --version         # → executes: php --version
+ddev composer install      # → executes: composer install
+ddev npm run build         # → executes: npm run build
+ddev node script.js        # → executes: node script.js
+```
+
+Claude can run `php`, `composer`, `node`, and `npm` commands without user intervention. Unknown commands are attempted directly -- if the command doesn't exist, you'll see a standard "command not found" error.
+
+**Lifecycle commands are blocked:**
+```bash
+# These exit 127 with helpful error messages:
+ddev restart               # → "Must run on host: ddev restart"
+ddev exec -s web php -v    # → "Must run on host: ddev exec -s web php -v"
+ddev start                 # → "Must run on host: ddev start"
+```
+
+Lifecycle commands (`start`, `restart`, `stop`, `exec`, `config`, etc.) must run on the host. The shim prevents confusion and suggests the correct command to run.
+
 ### First build is slow
 
 The Dockerfile installs Node.js (LTS), PHP, Composer, Claude CLI, gum, iptables, ipset, and other tools. This is a one-time cost -- subsequent `ddev restart` commands use the cached Docker image.
@@ -291,6 +316,8 @@ The healthcheck runs every 30 seconds and validates:
 
 Mounts:
   ${DDEV_APPROOT}  -->  ${DDEV_APPROOT}            (project files, real host path)
+  .ddev/claude/config/empty.env --> ${DDEV_APPROOT}/.env        (masked)
+                               --> ${DDEV_APPROOT}/.ddev/.env   (masked)
   ~/.claude/       -->  /root/.claude/              (persistent sessions)
                    -->  /home/claude/.claude/
                    -->  ${HOME}/.claude/            (host-absolute plugin paths)
@@ -303,6 +330,8 @@ Mounts:
 - **Dedicated container** -- Isolates Claude from the web container. The web container needs unrestricted network for normal operations; Claude's restrictions should never interfere.
 - **debian:bookworm-slim base** -- Minimal footprint with access to standard Debian packages for PHP, Node.js, and firewall tools.
 - **Real host path mount** -- The project is mounted at `${DDEV_APPROOT}` (the actual path on your host), not at `/var/www/html`. This ensures Claude's file references match your local paths.
+- **Masked env files** -- `${DDEV_APPROOT}/.env` and `${DDEV_APPROOT}/.ddev/.env` are replaced in the claude container with `.ddev/claude/config/empty.env`. This prevents Claude from accessing project secrets.
+- **ddev shim in claude** -- The `ddev` shim auto-forwards runtime commands (`php`, `composer`, `node`, `npm`) to the local runtime while blocking lifecycle commands (`start`, `restart`, `exec`). This lets Claude run development commands directly without compromising container isolation.
 - **ipset for IP management** -- Efficient O(1) lookups for whitelisted IPs, with built-in timeout support for automatic expiry and refresh.
 - **Fail-closed error handling** -- The entrypoint uses `trap ... ERR` to block all traffic if any setup step fails.
 - **Claude Code hooks** -- PreToolUse hooks intercept tool calls before execution, check domains against the whitelist, and guide users through approval. The hooks are a UX improvement; iptables remains the security enforcement layer.

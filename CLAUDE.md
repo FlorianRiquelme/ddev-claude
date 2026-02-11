@@ -27,9 +27,11 @@ ddev claude:whitelist
 # Debug firewall inside container
 ddev exec -s claude iptables -L OUTPUT -n
 ddev exec -s claude ipset list whitelist_ips
-```
 
-There is no formal test suite yet (planned for Phase 3 with bats).
+# Run tests
+make test-unit           # Unit tests (44 tests, no DDEV needed)
+make test-integration    # Integration tests (requires DDEV environment)
+```
 
 ## Architecture
 
@@ -37,9 +39,11 @@ There is no formal test suite yet (planned for Phase 3 with bats).
 
 **Key components:**
 
-- `docker-compose.claude.yaml` — Service definition. Mounts project at `${DDEV_APPROOT}` (real host path, not `/var/www/html`). Requires NET_ADMIN + NET_RAW capabilities.
+- `docker-compose.claude.yaml` — Service definition. Mounts project at `${DDEV_APPROOT}` (real host path, not `/var/www/html`). Masks `.env` and `.ddev/.env` with empty file. Requires NET_ADMIN + NET_RAW capabilities.
 - `install.yaml` — DDEV addon manifest. Copies `claude/` dir and host commands into `.ddev/`.
-- `claude/Dockerfile.claude` — Builds on `debian:bookworm-slim`. Installs PHP, Node.js, Composer, iptables, ipset, jq, gum, Claude CLI.
+- `claude/Dockerfile.claude` — Builds on `debian:bookworm-slim`. Installs PHP, Node.js, Composer, iptables, ipset, jq, gum, Claude CLI. Creates symlink for ddev shim.
+- `claude/bin/ddev` — ddev command shim. Auto-forwards runtime commands (php, composer, node, npm) to local runtime. Blocks lifecycle commands (start, restart, exec) with helpful hints.
+- `claude/config/empty.env` — Empty file mounted over project `.env` and `.ddev/.env` to prevent Claude from accessing secrets.
 - `claude/entrypoint.sh` — Firewall initialization. Rule order matters: loopback → DNS → established → whitelisted IPs → log → DROP.
 - `claude/resolve-and-apply.sh` — Resolves domains to IPs via `dig` and adds to ipset.
 - `claude/scripts/merge-whitelist.sh` — 3-tier config merge (default + global + per-project).
@@ -74,4 +78,10 @@ Planning artifacts live in `.planning/`:
 
 ## Current Status
 
-Phases 1 (Firewall Foundation) and 2 (Configuration & Commands) are complete. Next up is Phase 3 (Safety Warnings & Documentation) which includes mount detection warnings, `.env` protection checks, and a bats test suite.
+Phases 1 (Firewall Foundation) and 2 (Configuration & Commands) are complete. The **env-isolation** feature is also complete, adding:
+- Environment file masking (`.env` and `.ddev/.env` appear empty inside claude container)
+- ddev command shim with smart forwarding (runtime commands work, lifecycle commands blocked)
+
+**Test coverage:** 44 unit tests + 9 integration tests covering firewall, hooks, commands, env isolation, and ddev shim behavior.
+
+Next up is Phase 3 (Safety Warnings & Documentation) which includes mount detection warnings and additional `.env` protection checks.

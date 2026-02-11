@@ -120,3 +120,42 @@ EOF
   [[ "$output" == *"SECRET FILES DETECTED"* ]]
   [[ "$output" == *".env"* ]]
 }
+
+@test "ddev shim forwards runtime commands (php)" {
+  run bash "$REPO_ROOT/claude/bin/ddev" php --version
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"PHP"* ]]
+}
+
+@test "ddev shim forwards runtime commands (node)" {
+  run bash "$REPO_ROOT/claude/bin/ddev" node --version
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"v"* ]]
+}
+
+@test "ddev shim forwards runtime commands (composer)" {
+  run bash "$REPO_ROOT/claude/bin/ddev" composer --version
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Composer"* ]]
+}
+
+@test "ddev shim blocks lifecycle commands (restart)" {
+  status=0
+  output="$(bash "$REPO_ROOT/claude/bin/ddev" restart 2>&1)" || status=$?
+
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
+  [[ "$output" == *"ddev restart"* ]]
+}
+
+@test "ddev shim blocks lifecycle commands (exec)" {
+  status=0
+  output="$(bash "$REPO_ROOT/claude/bin/ddev" exec -s web php -v 2>&1)" || status=$?
+
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
+  [[ "$output" == *"ddev exec -s web php -v"* ]]
+}

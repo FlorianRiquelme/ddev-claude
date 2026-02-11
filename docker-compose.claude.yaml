@@ -18,6 +18,15 @@ services:
         source: ${DDEV_APPROOT}
         target: ${DDEV_APPROOT}
         consistency: cached
+      # Mask project env files inside claude container
+      - type: bind
+        source: ${DDEV_APPROOT}/.ddev/claude/config/empty.env
+        target: ${DDEV_APPROOT}/.env
+        read_only: true
+      - type: bind
+        source: ${DDEV_APPROOT}/.ddev/claude/config/empty.env
+        target: ${DDEV_APPROOT}/.ddev/.env
+        read_only: true
       - ~/.claude:/root/.claude:rw
       - ~/.claude.json:/root/.claude.json:rw
       - ~/.claude:/home/claude/.claude:rw

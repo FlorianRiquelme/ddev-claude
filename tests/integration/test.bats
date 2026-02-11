@@ -72,3 +72,116 @@ teardown_file() {
   # Verify output looks like an IP address
   [[ "$output" =~ ^[0-9]+\.[0-9]+ ]]
 }
+
+@test ".env file is masked inside claude container" {
+  cd "$TESTDIR"
+
+  # Remove any existing .env file and create a new one with fake secrets
+  rm -f .env
+  cat > .env << 'EOF'
+SECRET_KEY=super-secret-value-123
+DB_PASSWORD=do-not-leak-this
+EOF
+
+  # Verify the file has content on the host
+  [ -s .env ]
+  grep -q "SECRET_KEY" .env
+
+  # Restart containers so Docker can establish bind mount over the new .env file
+  ddev restart >/dev/null
+
+  # The critical security test: secrets are NOT visible inside container
+  run ddev exec -s claude bash -c 'grep "SECRET_KEY" ${DDEV_APPROOT}/.env' 2>&1
+  [ "$status" -ne 0 ]
+
+  run ddev exec -s claude bash -c 'grep "DB_PASSWORD" ${DDEV_APPROOT}/.env' 2>&1
+  [ "$status" -ne 0 ]
+}
+
+@test ".ddev/.env file is masked inside claude container" {
+  cd "$TESTDIR"
+
+  # Remove any existing .ddev/.env file and create a new one with DDEV-specific secrets
+  rm -f .ddev/.env
+  cat > .ddev/.env << 'EOF'
+DDEV_ROUTER_HTTP_PORT=8080
+ADMIN_TOKEN=sensitive-admin-token
+EOF
+
+  # Verify the file has content on the host
+  [ -s .ddev/.env ]
+  grep -q "ADMIN_TOKEN" .ddev/.env
+
+  # Restart containers so Docker can establish bind mount over the new .ddev/.env file
+  ddev restart >/dev/null
+
+  # The critical security test: secrets are NOT visible inside container
+  run ddev exec -s claude bash -c 'grep "ADMIN_TOKEN" ${DDEV_APPROOT}/.ddev/.env' 2>&1
+  [ "$status" -ne 0 ]
+
+  run ddev exec -s claude bash -c 'grep "DDEV_ROUTER_HTTP_PORT" ${DDEV_APPROOT}/.ddev/.env' 2>&1
+  [ "$status" -ne 0 ]
+}
+
+@test "ddev shim forwards runtime command: php" {
+  cd "$TESTDIR"
+
+  # Runtime commands should be forwarded and execute successfully
+  run ddev exec -s claude ddev php --version
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"PHP"* ]]
+}
+
+@test "ddev shim forwards runtime command: composer" {
+  cd "$TESTDIR"
+
+  run ddev exec -s claude ddev composer --version
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Composer"* ]]
+}
+
+@test "ddev shim forwards runtime command: node" {
+  cd "$TESTDIR"
+
+  run ddev exec -s claude ddev node --version
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"v"* ]]
+}
+
+@test "ddev shim forwards runtime command: npm" {
+  cd "$TESTDIR"
+
+  run ddev exec -s claude ddev npm --version
+  [ "$status" -eq 0 ]
+  # npm version output is just the version number
+  [[ "$output" =~ ^[0-9]+\.[0-9]+ ]]
+}
+
+@test "ddev lifecycle commands are blocked: restart" {
+  cd "$TESTDIR"
+
+  # Lifecycle commands should be blocked with helpful error
+  run -127 ddev exec -s claude ddev restart 2>&1
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
+  [[ "$output" == *"ddev restart"* ]]
+}
+
+@test "ddev lifecycle commands are blocked: exec" {
+  cd "$TESTDIR"
+
+  # exec is a lifecycle command and should be blocked
+  run -127 ddev exec -s claude ddev exec -s web php -v 2>&1
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
+  [[ "$output" == *"ddev exec -s web php -v"* ]]
+}
+
+@test "ddev shim is in PATH inside claude container" {
+  cd "$TESTDIR"
+
+  # Verify ddev command exists and is our shim
+  run ddev exec -s claude which ddev
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"/usr/local/bin/ddev"* ]]
+}
