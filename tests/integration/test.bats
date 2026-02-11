@@ -186,32 +186,37 @@ EOF
   [[ "$output" == *"/usr/local/bin/ddev"* ]]
 }
 
-@test "git identity is available inside claude container" {
+@test "git config files are mounted inside claude container" {
   cd "$TESTDIR"
 
-  # Verify git config from host is accessible
-  run ddev exec -s claude git config --global user.name
+  # Verify git config file paths are mounted (even if empty)
+  run ddev exec -s claude test -f /root/.gitconfig
   [ "$status" -eq 0 ]
-  [ -n "$output" ]
 
-  run ddev exec -s claude git config --global user.email
+  run ddev exec -s claude test -d /root/.config/git
   [ "$status" -eq 0 ]
-  [ -n "$output" ]
+
+  run ddev exec -s claude test -f /home/claude/.gitconfig
+  [ "$status" -eq 0 ]
+
+  run ddev exec -s claude test -d /home/claude/.config/git
+  [ "$status" -eq 0 ]
 }
 
-@test "git commit succeeds inside claude container" {
+@test "git commit succeeds inside claude container with repo-level config" {
   cd "$TESTDIR"
 
   # Initialize git repo if not already done
   if [ ! -d .git ]; then
     git init
-    git config user.name "Test User"
-    git config user.email "test@example.com"
   fi
 
-  # Create a test file and commit inside the claude container
+  # Set up git identity and commit inside the claude container
+  # This tests that git operations work with repo-level config
   run ddev exec -s claude bash -c '
     cd ${DDEV_APPROOT} && \
+    git config user.name "Test User" && \
+    git config user.email "test@example.com" && \
     echo "test content" > test-file.txt && \
     git add test-file.txt && \
     git commit -m "Test commit from claude container"
@@ -220,11 +225,51 @@ EOF
   [[ "$output" =~ "Test commit from claude container" ]]
 
   # Verify the commit was created with proper author info
-  run git log -1 --pretty=format:%an
+  run git log -1 --pretty=format:"%an <%ae>"
   [ "$status" -eq 0 ]
-  [ -n "$output" ]
+  [[ "$output" =~ "Test User <test@example.com>" ]]
 
-  # Cleanup test file
+  # Cleanup
   rm -f test-file.txt
+  git reset --hard HEAD~1 2>/dev/null || true
+}
+
+@test "git commit uses host global config when available" {
+  cd "$TESTDIR"
+
+  # Skip if host doesn't have git configured globally
+  host_name=$(git config --global user.name 2>/dev/null || echo "")
+  host_email=$(git config --global user.email 2>/dev/null || echo "")
+  if [ -z "$host_name" ] || [ -z "$host_email" ]; then
+    skip "Host git not configured globally"
+  fi
+
+  # Initialize git repo without local config
+  if [ ! -d .git ]; then
+    git init
+  fi
+
+  # Commit inside container WITHOUT setting repo-level config
+  # Should use host global config via mounted ~/.gitconfig
+  run ddev exec -s claude bash -c '
+    cd ${DDEV_APPROOT} && \
+    echo "test content 2" > test-file-2.txt && \
+    git add test-file-2.txt && \
+    git commit -m "Test commit using host config"
+  '
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "Test commit using host config" ]]
+
+  # Verify the commit used host identity
+  run git log -1 --pretty=format:"%an"
+  [ "$status" -eq 0 ]
+  [[ "$output" == "$host_name" ]]
+
+  run git log -1 --pretty=format:"%ae"
+  [ "$status" -eq 0 ]
+  [[ "$output" == "$host_email" ]]
+
+  # Cleanup
+  rm -f test-file-2.txt
   git reset --hard HEAD~1 2>/dev/null || true
 }
