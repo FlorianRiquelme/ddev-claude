@@ -1,10 +1,15 @@
 #!/bin/bash
 #ddev-generated
 #
-# generate-settings.sh - Register Claude Code hooks in settings.json
+# generate-settings.sh - Register Claude Code hooks in project settings.local.json
 #
-# Merges ddev-claude hook configuration into /root/.claude/settings.json
-# (bind-mounted from host ~/.claude/). Idempotent — skips if already registered.
+# Writes ddev-claude hook configuration to $DDEV_APPROOT/.claude/settings.local.json
+# (project-scoped, auto-gitignored by Claude Code). This avoids polluting the
+# global ~/.claude/settings.json which would cause errors on the host where
+# /opt/ddev-claude/hooks/ does not exist.
+#
+# Hook commands are conditional: they no-op gracefully if the scripts don't exist
+# (e.g. when Claude Code runs on the host in the same project directory).
 
 set -euo pipefail
 
@@ -12,19 +17,18 @@ LOG_PREFIX="[ddev-claude]"
 log() { echo "$LOG_PREFIX $*"; }
 error() { echo "$LOG_PREFIX ERROR: $*" >&2; }
 
-SETTINGS_FILE="/root/.claude/settings.json"
-BACKUP_FILE="/root/.claude/settings.json.ddev-backup"
+SETTINGS_FILE="${DDEV_APPROOT}/.claude/settings.local.json"
 HOOK_COMMAND_URL="/opt/ddev-claude/hooks/url-check.sh"
 HOOK_COMMAND_SECRET="/opt/ddev-claude/hooks/secret-check.sh"
 
-# Hook configs to inject
+# Hook configs to inject — commands are conditional so they no-op on the host
 HOOK_CONFIG_URL=$(cat <<'HOOKJSON'
 {
   "matcher": "WebFetch|Bash|mcp__.*",
   "hooks": [
     {
       "type": "command",
-      "command": "/opt/ddev-claude/hooks/url-check.sh"
+      "command": "test -f /opt/ddev-claude/hooks/url-check.sh && /opt/ddev-claude/hooks/url-check.sh || exit 0"
     }
   ]
 }
@@ -37,7 +41,7 @@ HOOK_CONFIG_SECRET=$(cat <<'HOOKJSON'
   "hooks": [
     {
       "type": "command",
-      "command": "/opt/ddev-claude/hooks/secret-check.sh"
+      "command": "test -f /opt/ddev-claude/hooks/secret-check.sh && /opt/ddev-claude/hooks/secret-check.sh || exit 0"
     }
   ]
 }
@@ -47,7 +51,7 @@ HOOKJSON
 # Read existing settings (or empty object)
 if [[ -f "$SETTINGS_FILE" ]]; then
     if ! existing=$(jq '.' "$SETTINGS_FILE" 2>/dev/null); then
-        error "settings.json contains invalid JSON - please fix manually: $SETTINGS_FILE"
+        error "settings.local.json contains invalid JSON - please fix manually: $SETTINGS_FILE"
         exit 1
     fi
 else
@@ -59,27 +63,24 @@ needs_url=true
 needs_secret=true
 
 if echo "$existing" | jq -e --arg cmd "$HOOK_COMMAND_URL" \
-    '.hooks.PreToolUse // [] | map(.hooks // []) | flatten | map(select(.command == $cmd)) | length > 0' \
+    '.hooks.PreToolUse // [] | map(.hooks // []) | flatten | map(select(.command | contains($cmd))) | length > 0' \
     > /dev/null 2>&1; then
     needs_url=false
 fi
 
 if echo "$existing" | jq -e --arg cmd "$HOOK_COMMAND_SECRET" \
-    '.hooks.PreToolUse // [] | map(.hooks // []) | flatten | map(select(.command == $cmd)) | length > 0' \
+    '.hooks.PreToolUse // [] | map(.hooks // []) | flatten | map(select(.command | contains($cmd))) | length > 0' \
     > /dev/null 2>&1; then
     needs_secret=false
 fi
 
 if [[ "$needs_url" == "false" && "$needs_secret" == "false" ]]; then
-    log "Hooks already registered in settings.json"
+    log "Hooks already registered in settings.local.json"
     exit 0
 fi
 
-# Back up original settings (first run only)
-if [[ -f "$SETTINGS_FILE" && ! -f "$BACKUP_FILE" ]]; then
-    cp "$SETTINGS_FILE" "$BACKUP_FILE"
-    log "Backed up settings.json to settings.json.ddev-backup"
-fi
+# Ensure settings directory exists
+mkdir -p "$(dirname "$SETTINGS_FILE")"
 
 # Deep-merge: append missing hook entries to existing PreToolUse array
 merged="$existing"
@@ -102,12 +103,9 @@ if [[ "$needs_secret" == "true" ]]; then
     log "Adding secret-check hook"
 fi
 
-# Ensure settings directory exists
-mkdir -p "$(dirname "$SETTINGS_FILE")"
-
 # Write back (atomic)
 tmp_settings=$(mktemp)
 echo "$merged" > "$tmp_settings"
 mv "$tmp_settings" "$SETTINGS_FILE"
 
-log "Registered PreToolUse hooks in settings.json"
+log "Registered PreToolUse hooks in settings.local.json"

@@ -8,7 +8,7 @@ set -euo pipefail
 LOG_PREFIX="[ddev-claude]"
 
 # Get blocked IPs from kernel log
-blocked_ips=$(dmesg 2>/dev/null | grep '\[FIREWALL-BLOCK\]' | grep -oP 'DST=\K[0-9.]+' | sort -u)
+blocked_ips=$(dmesg 2>/dev/null | grep '\[FIREWALL-BLOCK\]' | sed -n 's/.*DST=\([0-9.]*\).*/\1/p' | sort -u)
 
 if [[ -z "$blocked_ips" ]]; then
     exit 0  # No blocked domains, silent exit

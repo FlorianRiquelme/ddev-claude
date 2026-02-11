@@ -35,14 +35,20 @@ post_install_actions:
 
 removal_actions:
   - |
-    #ddev-description:Restoring Claude Code settings (removing hooks)
-    if [ -f ~/.claude/settings.json.ddev-backup ]; then
-      cp ~/.claude/settings.json.ddev-backup ~/.claude/settings.json
-      rm -f ~/.claude/settings.json.ddev-backup
-    elif [ -f ~/.claude/settings.json ]; then
-      # Remove our hook entry even without backup
-      jq 'if .hooks?.PreToolUse then .hooks.PreToolUse |= map(select(.hooks | all(.command | startswith("/opt/ddev-claude/") | not))) | if .hooks.PreToolUse == [] then del(.hooks.PreToolUse) else . end | if .hooks == {} then del(.hooks) else . end else . end' ~/.claude/settings.json > /tmp/ddev-claude-settings-clean.json && mv /tmp/ddev-claude-settings-clean.json ~/.claude/settings.json || true
+    #ddev-description:Removing ddev-claude hooks from project settings
+    if [ -f .claude/settings.local.json ]; then
+      jq 'if .hooks?.PreToolUse then .hooks.PreToolUse |= map(select(.hooks | all(.command | contains("/opt/ddev-claude/") | not))) | if .hooks.PreToolUse == [] then del(.hooks.PreToolUse) else . end | if .hooks == {} then del(.hooks) else . end else . end' .claude/settings.local.json > /tmp/ddev-claude-settings-clean.json && mv /tmp/ddev-claude-settings-clean.json .claude/settings.local.json || true
+      # Remove file entirely if it's now just an empty object
+      if [ "$(jq 'length' .claude/settings.local.json 2>/dev/null)" = "0" ]; then
+        rm -f .claude/settings.local.json
+      fi
     fi
+  - |
+    #ddev-description:Cleaning up legacy hooks from global settings
+    if [ -f ~/.claude/settings.json ]; then
+      jq 'if .hooks?.PreToolUse then .hooks.PreToolUse |= map(select(.hooks | all(.command | contains("/opt/ddev-claude/") | not))) | if .hooks.PreToolUse == [] then del(.hooks.PreToolUse) else . end | if .hooks == {} then del(.hooks) else . end else . end' ~/.claude/settings.json > /tmp/ddev-claude-settings-clean.json && mv /tmp/ddev-claude-settings-clean.json ~/.claude/settings.json || true
+    fi
+    rm -f ~/.claude/settings.json.ddev-backup
   - |
     #ddev-description:Removing addon files
     rm -rf .ddev/claude .ddev/docker-compose.claude.yaml

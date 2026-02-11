@@ -51,15 +51,14 @@ Then restart: `ddev restart`.
 ### Basic
 
 ```bash
-# Start Claude with firewall active
+# Start Claude with firewall protection
 ddev claude
-
-# Autonomous mode with firewall protection
-ddev claude --dangerously-skip-permissions
 
 # Pass any Claude CLI flags
 ddev claude --help
 ```
+
+> **Note:** `ddev claude` always enables `--dangerously-skip-permissions` automatically. The firewall makes this safe by blocking unauthorized outbound traffic. You do not need to pass the flag yourself.
 
 ### No-Firewall Mode
 
@@ -170,7 +169,7 @@ The addon ships with these domains pre-whitelisted in `default-whitelist.json`:
 Reference templates are available in `.ddev/claude/config/stack-templates/`:
 
 - `npm.json` -- adds `registry.npmjs.org`, `registry.yarnpkg.com`, GitHub
-- `laravel.json` -- adds `packagist.org`, `repo.packagist.org`, GitHub
+- `laravel.json` -- adds `packagist.org`, `repo.packagist.org`, `raw.githubusercontent.com`, GitHub
 
 Use these as a starting point when building your own whitelist files.
 
@@ -234,13 +233,38 @@ Whitelisted IPs are added with a 3600-second timeout in ipset. The hot-reload wa
 
 All iptables rules and ipset entries are rebuilt from config files on every container start. Manual changes to iptables inside the container do not persist across `ddev restart`.
 
-### `--no-firewall` captures DNS responses, not queries
+### `--no-firewall` relies on DNS traffic
 
-The tcpdump capture monitors DNS response traffic on port 53. In rare cases where DNS results are cached, some domains may not appear in the session log. Run `ddev claude:whitelist` to also check the firewall's blocked-request log for any domains that were missed.
+The tcpdump capture monitors all traffic on port 53 (queries and responses). In rare cases where DNS results are cached, some domains may not appear in the session log. Run `ddev claude:whitelist` to also check the firewall's blocked-request log for any domains that were missed.
 
 ### Localhost MCP servers do not work
 
 The container has its own network namespace. `localhost` inside the container refers to the container itself, not your host machine. Host-based stdio MCP servers (filesystem, git, etc.) are not reachable. This is a fundamental limitation of container isolation.
+
+### `ddev` commands inside claude container
+
+The claude container includes a `ddev` shim that enables Claude to run runtime commands directly while blocking lifecycle commands. This provides convenience without compromising security:
+
+**Runtime commands are auto-forwarded:**
+```bash
+# Inside claude container, these work automatically:
+ddev php --version         # → executes: php --version
+ddev composer install      # → executes: composer install
+ddev npm run build         # → executes: npm run build
+ddev node script.js        # → executes: node script.js
+```
+
+Claude can run `php`, `composer`, `node`, and `npm` commands without user intervention. Unknown commands are attempted directly -- if the command doesn't exist, you'll see a standard "command not found" error.
+
+**Lifecycle commands are blocked:**
+```bash
+# These exit 127 with helpful error messages:
+ddev restart               # → "Must run on host: ddev restart"
+ddev exec -s web php -v    # → "Must run on host: ddev exec -s web php -v"
+ddev start                 # → "Must run on host: ddev start"
+```
+
+Lifecycle commands (`start`, `restart`, `stop`, `exec`, `config`, etc.) must run on the host. The shim prevents confusion and suggests the correct command to run.
 
 ### First build is slow
 
@@ -278,7 +302,7 @@ The healthcheck runs every 30 seconds and validates:
 
 1. iptables rules are loaded
 2. OUTPUT policy is DROP
-3. The `whitelist_ips` ipset exists and has entries
+3. The `whitelist_ips` ipset exists (warns if empty, but does not fail)
 4. Non-whitelisted traffic is actively blocked (tested against a reserved IP range)
 
 ## Architecture
@@ -308,9 +332,14 @@ The healthcheck runs every 30 seconds and validates:
 +---------------------------------------------------------------+
 
 Mounts:
-  ${DDEV_APPROOT}  -->  ${DDEV_APPROOT}   (project files, real host path)
-  ~/.claude/       -->  /root/.claude/     (persistent sessions)
-  ~/.claude.json   -->  /root/.claude.json (Claude config + MCP servers)
+  ${DDEV_APPROOT}  -->  ${DDEV_APPROOT}            (project files, real host path)
+  .ddev/claude/config/empty.env --> ${DDEV_APPROOT}/.env        (masked)
+                               --> ${DDEV_APPROOT}/.ddev/.env   (masked)
+  ~/.claude/       -->  /root/.claude/              (persistent sessions)
+                   -->  /home/claude/.claude/
+                   -->  ${HOME}/.claude/            (host-absolute plugin paths)
+  ~/.claude.json   -->  /root/.claude.json          (Claude config + MCP servers)
+                   -->  /home/claude/.claude.json
 ```
 
 **Key design decisions:**
@@ -318,6 +347,8 @@ Mounts:
 - **Dedicated container** -- Isolates Claude from the web container. The web container needs unrestricted network for normal operations; Claude's restrictions should never interfere.
 - **debian:bookworm-slim base** -- Minimal footprint with access to standard Debian packages for PHP, Node.js, and firewall tools.
 - **Real host path mount** -- The project is mounted at `${DDEV_APPROOT}` (the actual path on your host), not at `/var/www/html`. This ensures Claude's file references match your local paths.
+- **Masked env files** -- `${DDEV_APPROOT}/.env` and `${DDEV_APPROOT}/.ddev/.env` are replaced in the claude container with `.ddev/claude/config/empty.env`. This prevents Claude from accessing project secrets.
+- **ddev shim in claude** -- The `ddev` shim auto-forwards runtime commands (`php`, `composer`, `node`, `npm`) to the local runtime while blocking lifecycle commands (`start`, `restart`, `exec`). This lets Claude run development commands directly without compromising container isolation.
 - **ipset for IP management** -- Efficient O(1) lookups for whitelisted IPs, with built-in timeout support for automatic expiry and refresh.
 - **Fail-closed error handling** -- The entrypoint uses `trap ... ERR` to block all traffic if any setup step fails.
 - **Claude Code hooks** -- PreToolUse hooks intercept tool calls before execution, check domains against the whitelist, and guide users through approval. The hooks are a UX improvement; iptables remains the security enforcement layer.
@@ -330,8 +361,17 @@ ddev addon remove ddev-claude
 ddev restart
 ```
 
-This removes all addon files from `.ddev/` and stops the claude container. Your original `~/.claude/settings.json` is restored from the backup the addon created on first run. Your project and web container are not affected.
+This removes all addon files from `.ddev/` and stops the claude container. The addon's PreToolUse hooks are removed from `.claude/settings.local.json` and `~/.claude/settings.json`. Your project and web container are not affected.
 
+## Testing
+
+The addon is covered by a Bats test suite across hooks, host commands, core scripts, and script syntax.
+
+```bash
+./tests/run-bats.sh
+```
+
+If `bats` is missing, install `bats-core` and rerun the command.
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request on [GitHub](https://github.com/florianriquelme/ddev-claude).
@@ -342,4 +382,4 @@ MIT
 
 ---
 
-**Maintained by:** [Florian Riquelme](https://github.com/florianriquelme)
+**Maintained by:** [Florian Riquelme](https://friquelme.dev) ([GitHub](https://github.com/florianriquelme))

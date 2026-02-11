@@ -29,7 +29,7 @@ blocked=$(ddev exec -s claude "${DDEV_APPROOT}/.ddev/claude/scripts/parse-blocke
 accessed=$(ddev exec -s claude cat /tmp/ddev-claude-accessed.log 2>/dev/null || echo "")
 
 # Combine and deduplicate
-all_domains=$(echo -e "${blocked}\n${accessed}" | grep -v '^$' | sort -u)
+all_domains=$(echo -e "${blocked}\n${accessed}" | grep -v '^$' | sort -u || true)
 
 if [[ -z "$all_domains" ]]; then
     echo "No blocked or accessed domains found."
@@ -45,8 +45,8 @@ domains=$(echo "$all_domains" | grep -v "(no reverse DNS)" || echo "")
 ips_only=$(echo "$all_domains" | grep "(no reverse DNS)" || echo "")
 
 # Count sources
-blocked_count=$(echo "$blocked" | grep -v '^$' | wc -l | tr -d ' ')
-accessed_count=$(echo "$accessed" | grep -v '^$' | wc -l | tr -d ' ')
+blocked_count=$(printf '%s\n' "$blocked" | awk 'NF{c++} END{print c+0}')
+accessed_count=$(printf '%s\n' "$accessed" | awk 'NF{c++} END{print c+0}')
 
 echo ""
 if [[ "$blocked_count" -gt 0 ]]; then

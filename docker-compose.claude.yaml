@@ -18,16 +18,34 @@ services:
         source: ${DDEV_APPROOT}
         target: ${DDEV_APPROOT}
         consistency: cached
+      # Mask project env files inside claude container
+      - type: bind
+        source: ${DDEV_APPROOT}/.ddev/claude/config/empty.env
+        target: ${DDEV_APPROOT}/.env
+        read_only: true
+      - type: bind
+        source: ${DDEV_APPROOT}/.ddev/claude/config/empty.env
+        target: ${DDEV_APPROOT}/.ddev/.env
+        read_only: true
       - ~/.claude:/root/.claude:rw
       - ~/.claude.json:/root/.claude.json:rw
+      - ~/.claude:/home/claude/.claude:rw
+      - ~/.claude.json:/home/claude/.claude.json:rw
+      # Keep host-absolute plugin install paths valid inside container
+      - ${HOME}/.claude:${HOME}/.claude:rw
+      # Git identity for commits inside container
       - ~/.gitconfig:/root/.gitconfig:ro
       - ~/.config/git:/root/.config/git:ro
+      - ~/.gitconfig:/home/claude/.gitconfig:ro
+      - ~/.config/git:/home/claude/.config/git:ro
 
     working_dir: ${DDEV_APPROOT}
 
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - DDEV_APPROOT=${DDEV_APPROOT}
+      - CLAUDE_USER=claude
+      - CLAUDE_HOME=/home/claude
 
     networks:
       - default

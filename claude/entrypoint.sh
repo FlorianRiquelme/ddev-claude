@@ -9,8 +9,14 @@ BLOCKED_LOG="/tmp/ddev-claude-blocked.log"
 log() { echo "$LOG_PREFIX $*"; }
 error() { echo "$LOG_PREFIX ERROR: $*" >&2; }
 
+fail_closed() {
+    error "Firewall initialization failed - blocking all traffic"
+    iptables -P OUTPUT DROP 2>/dev/null || true
+    exit 1
+}
+
 # Error trap - fail closed
-trap 'error "Firewall initialization failed - blocking all traffic"; exit 1' ERR
+trap fail_closed ERR
 
 log "Initializing firewall rules..."
 
@@ -53,8 +59,9 @@ fi
 # 6b. Auto-whitelist MCP server domains from user config
 extract_mcp_domains() {
     local domains=""
-    local mcp_json="/root/.mcp.json"
-    local claude_json="/root/.claude.json"
+    local claude_home="${CLAUDE_HOME:-/root}"
+    local mcp_json="${claude_home}/.mcp.json"
+    local claude_json="${claude_home}/.claude.json"
     local project_mcp="${DDEV_APPROOT}/.mcp.json"
 
     # Tier 1: ~/.mcp.json (global)
@@ -81,7 +88,7 @@ extract_mcp_domains() {
 
     # Extract hostnames from URLs, filter localhost, deduplicate
     echo "$domains" \
-        | grep -oP '://\K[^/:?]+' 2>/dev/null \
+        | sed -E 's#^[a-zA-Z]+://##; s#[:/?].*$##' \
         | grep -v -E '^(localhost|127\.0\.0\.1|0\.0\.0\.0)$' \
         | sort -u \
         || true

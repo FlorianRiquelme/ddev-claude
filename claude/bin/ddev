@@ -1,0 +1,67 @@
+#!/bin/bash
+#ddev-generated
+set -euo pipefail
+
+LOG_PREFIX="[ddev-claude]"
+
+quote_args() {
+    if (($# == 0)); then
+        echo ""
+        return
+    fi
+    local joined
+    joined="$(printf "%q " "$@")"
+    echo "${joined% }"
+}
+
+is_lifecycle_command() {
+    local cmd="${1:-}"
+    case "$cmd" in
+        # Lifecycle and project control commands - must run on host
+        start|stop|restart|poweroff|delete|pause|unpause|config|list|describe|debug|version|\
+        launch|auth|snapshot|snapshot-restore|add-on|addon|get|xdebug|share|\
+        import-db|export-db|import-files|export-files|logs|status|help|exec|ssh)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+hint_lifecycle() {
+    local subcommand="$1"
+    shift
+    local args="$(quote_args "$@")"
+    echo "$LOG_PREFIX ddev is blocked inside the claude container."
+    echo "$LOG_PREFIX Lifecycle commands must run on the host."
+    echo "$LOG_PREFIX Suggested command:"
+    if [[ -n "$args" ]]; then
+        echo "$LOG_PREFIX   ddev $subcommand $args"
+    else
+        echo "$LOG_PREFIX   ddev $subcommand"
+    fi
+}
+
+main() {
+    if (($# == 0)); then
+        echo "$LOG_PREFIX ddev is blocked inside the claude container."
+        echo "$LOG_PREFIX Run ddev commands from the host."
+        exit 127
+    fi
+
+    local subcommand="$1"
+    shift
+
+    # Block lifecycle commands - must run on host
+    if is_lifecycle_command "$subcommand"; then
+        hint_lifecycle "$subcommand" "$@"
+        exit 127
+    fi
+
+    # Forward runtime commands to local runtime (php, composer, node, npm, etc.)
+    # If command doesn't exist, exec will fail with "command not found"
+    exec "$subcommand" "$@"
+}
+
+main "$@"
