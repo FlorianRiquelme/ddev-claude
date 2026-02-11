@@ -1,3 +1,7 @@
 .idea/
 sandbox/*
 !sandbox/*.sh
+
+# Instinct exports and instincts directory (local artifacts)
+instincts-export-*.yaml
+instincts/
