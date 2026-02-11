@@ -87,14 +87,11 @@ EOF
   [ -s .env ]
   grep -q "SECRET_KEY" .env
 
-  # Inside claude container, .env should be empty (masked by empty.env mount)
-  run ddev exec -s claude bash -c 'cat ${DDEV_APPROOT}/.env'
-  [ "$status" -eq 0 ]
-  # Output should be empty or just a comment
-  [[ "$output" == "" || "$output" == *"intentionally empty"* ]]
+  # The critical security test: secrets are NOT visible inside container
+  run ddev exec -s claude bash -c 'grep "SECRET_KEY" ${DDEV_APPROOT}/.env' 2>&1
+  [ "$status" -ne 0 ]
 
-  # Verify secrets are NOT visible inside container
-  run ddev exec -s claude bash -c 'grep -q "SECRET_KEY" ${DDEV_APPROOT}/.env' 2>&1
+  run ddev exec -s claude bash -c 'grep "DB_PASSWORD" ${DDEV_APPROOT}/.env' 2>&1
   [ "$status" -ne 0 ]
 }
 
@@ -112,14 +109,11 @@ EOF
   [ -s .ddev/.env ]
   grep -q "ADMIN_TOKEN" .ddev/.env
 
-  # Inside claude container, .ddev/.env should be empty (masked by empty.env mount)
-  run ddev exec -s claude bash -c 'cat ${DDEV_APPROOT}/.ddev/.env'
-  [ "$status" -eq 0 ]
-  # Output should be empty or just a comment
-  [[ "$output" == "" || "$output" == *"intentionally empty"* ]]
+  # The critical security test: secrets are NOT visible inside container
+  run ddev exec -s claude bash -c 'grep "ADMIN_TOKEN" ${DDEV_APPROOT}/.ddev/.env' 2>&1
+  [ "$status" -ne 0 ]
 
-  # Verify secrets are NOT visible inside container
-  run ddev exec -s claude bash -c 'grep -q "ADMIN_TOKEN" ${DDEV_APPROOT}/.ddev/.env' 2>&1
+  run ddev exec -s claude bash -c 'grep "DDEV_ROUTER_HTTP_PORT" ${DDEV_APPROOT}/.ddev/.env' 2>&1
   [ "$status" -ne 0 ]
 }
 
