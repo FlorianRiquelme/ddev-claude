@@ -87,12 +87,8 @@ EOF
   [ -s .env ]
   grep -q "SECRET_KEY" .env
 
-  # Debug: Show what's actually in the file inside container
-  echo "=== DEBUG: Content inside container ==="
-  ddev exec -s claude bash -c 'cat ${DDEV_APPROOT}/.env'
-  echo "=== DEBUG: File type and mount info ==="
-  ddev exec -s claude bash -c 'ls -la ${DDEV_APPROOT}/.env'
-  ddev exec -s claude bash -c 'mount | grep ".env"'
+  # Restart containers so Docker can establish bind mount over the new .env file
+  ddev restart >/dev/null
 
   # The critical security test: secrets are NOT visible inside container
   run ddev exec -s claude bash -c 'grep "SECRET_KEY" ${DDEV_APPROOT}/.env' 2>&1
@@ -115,6 +111,9 @@ EOF
   # Verify the file has content on the host
   [ -s .ddev/.env ]
   grep -q "ADMIN_TOKEN" .ddev/.env
+
+  # Restart containers so Docker can establish bind mount over the new .ddev/.env file
+  ddev restart >/dev/null
 
   # The critical security test: secrets are NOT visible inside container
   run ddev exec -s claude bash -c 'grep "ADMIN_TOKEN" ${DDEV_APPROOT}/.ddev/.env' 2>&1
