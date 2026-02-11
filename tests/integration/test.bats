@@ -217,16 +217,15 @@ EOF
   '
   [ "$status" -eq 0 ]
 
-  # Set up git identity and commit inside the claude container
-  # This tests that git operations work with repo-level config
-  run ddev exec -s claude bash -c '
-    cd ${DDEV_APPROOT} && \
-    git config user.name "Test User" && \
-    git config user.email "test@example.com" && \
-    echo "test content" > test-file.txt && \
-    git add test-file.txt && \
-    git commit -m "Test commit from claude container"
-  '
+  # Set up git identity inside the container
+  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && git config user.name 'Test User' && git config user.email 'test@example.com'"
+  [ "$status" -eq 0 ]
+
+  # Create and commit a test file
+  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && echo 'test content' > test-file.txt && git add test-file.txt"
+  [ "$status" -eq 0 ]
+
+  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && git commit -m 'Test commit from claude container'"
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test commit from claude container" ]]
 
@@ -262,12 +261,10 @@ EOF
 
   # Commit inside container WITHOUT setting repo-level config
   # Should use host global config via mounted ~/.gitconfig
-  run ddev exec -s claude bash -c '
-    cd ${DDEV_APPROOT} && \
-    echo "test content 2" > test-file-2.txt && \
-    git add test-file-2.txt && \
-    git commit -m "Test commit using host config"
-  '
+  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && echo 'test content 2' > test-file-2.txt && git add test-file-2.txt"
+  [ "$status" -eq 0 ]
+
+  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && git commit -m 'Test commit using host config'"
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test commit using host config" ]]
 
