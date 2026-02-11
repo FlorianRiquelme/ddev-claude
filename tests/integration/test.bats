@@ -185,3 +185,46 @@ EOF
   [ "$status" -eq 0 ]
   [[ "$output" == *"/usr/local/bin/ddev"* ]]
 }
+
+@test "git identity is available inside claude container" {
+  cd "$TESTDIR"
+
+  # Verify git config from host is accessible
+  run ddev exec -s claude git config --global user.name
+  [ "$status" -eq 0 ]
+  [ -n "$output" ]
+
+  run ddev exec -s claude git config --global user.email
+  [ "$status" -eq 0 ]
+  [ -n "$output" ]
+}
+
+@test "git commit succeeds inside claude container" {
+  cd "$TESTDIR"
+
+  # Initialize git repo if not already done
+  if [ ! -d .git ]; then
+    git init
+    git config user.name "Test User"
+    git config user.email "test@example.com"
+  fi
+
+  # Create a test file and commit inside the claude container
+  run ddev exec -s claude bash -c '
+    cd ${DDEV_APPROOT} && \
+    echo "test content" > test-file.txt && \
+    git add test-file.txt && \
+    git commit -m "Test commit from claude container"
+  '
+  [ "$status" -eq 0 ]
+  [[ "$output" =~ "Test commit from claude container" ]]
+
+  # Verify the commit was created with proper author info
+  run git log -1 --pretty=format:%an
+  [ "$status" -eq 0 ]
+  [ -n "$output" ]
+
+  # Cleanup test file
+  rm -f test-file.txt
+  git reset --hard HEAD~1 2>/dev/null || true
+}
