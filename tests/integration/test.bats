@@ -203,40 +203,61 @@ EOF
   [ "$status" -eq 0 ]
 }
 
+@test "check which user runs commands in claude container" {
+  cd "$TESTDIR"
+
+  # Debug: Check which user is actually running commands
+  run ddev exec -s claude whoami
+  echo "Current user: $output"
+
+  run ddev exec -s claude id
+  echo "User ID info: $output"
+
+  # Check git version to ensure it's installed
+  run ddev exec -s claude git --version
+  [ "$status" -eq 0 ]
+  echo "Git version: $output"
+}
+
 @test "git commit succeeds inside claude container with repo-level config" {
   cd "$TESTDIR"
 
-  # Initialize git repo INSIDE the container to avoid permission issues
-  # This ensures the .git directory is owned by the container user
-  run ddev exec -s claude bash -c '
-    cd ${DDEV_APPROOT} && \
-    if [ ! -d .git ]; then
-      git init
-      git config advice.defaultBranchName false
-    fi
-  '
-  [ "$status" -eq 0 ]
+  # Check if git repo exists, if not initialize it
+  run ddev exec -s claude test -d "${DDEV_APPROOT}/.git"
+  if [ "$status" -ne 0 ]; then
+    run ddev exec -s claude git -C "${DDEV_APPROOT}" init
+    [ "$status" -eq 0 ]
+    run ddev exec -s claude git -C "${DDEV_APPROOT}" config advice.defaultBranchName false
+  fi
 
   # Set up git identity inside the container
-  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && git config user.name 'Test User' && git config user.email 'test@example.com'"
+  run ddev exec -s claude git -C "${DDEV_APPROOT}" config user.name "Test User"
   [ "$status" -eq 0 ]
 
-  # Create and commit a test file
-  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && echo 'test content' > test-file.txt && git add test-file.txt"
+  run ddev exec -s claude git -C "${DDEV_APPROOT}" config user.email "test@example.com"
   [ "$status" -eq 0 ]
 
-  run ddev exec -s claude bash -c "cd ${DDEV_APPROOT} && git commit -m 'Test commit from claude container'"
+  # Create a test file
+  run ddev exec -s claude bash -c "echo 'test content' > ${DDEV_APPROOT}/test-file.txt"
+  [ "$status" -eq 0 ]
+
+  # Add the file
+  run ddev exec -s claude git -C "${DDEV_APPROOT}" add test-file.txt
+  [ "$status" -eq 0 ]
+
+  # Commit the file
+  run ddev exec -s claude git -C "${DDEV_APPROOT}" commit -m "Test commit from claude container"
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test commit from claude container" ]]
 
   # Verify the commit was created with proper author info
-  run ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && git log -1 --pretty=format:"%an <%ae>"'
+  run ddev exec -s claude git -C "${DDEV_APPROOT}" log -1 --pretty=format:"%an <%ae>"
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test User <test@example.com>" ]]
 
   # Cleanup
-  ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && rm -f test-file.txt'
-  ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && git reset --hard HEAD~1 2>/dev/null' || true
+  ddev exec -s claude rm -f "${DDEV_APPROOT}/test-file.txt" || true
+  ddev exec -s claude git -C "${DDEV_APPROOT}" reset --hard HEAD~1 2>/dev/null || true
 }
 
 @test "git commit uses host global config when available" {
