@@ -21,10 +21,11 @@ teardown() {
 }
 
 teardown_file() {
-  set -eu -o pipefail
-  cd "/tmp/$PROJNAME" 2>/dev/null || true
-  ddev delete -Oy 2>/dev/null || true
-  rm -rf "/tmp/$PROJNAME"
+  # Cleanup is best-effort; do not use set -e here.
+  cd "/tmp/$PROJNAME" 2>/dev/null && ddev delete -Oy 2>/dev/null || true
+  cd /
+  # Docker-created files are root-owned on Linux; use sudo if available.
+  sudo rm -rf "/tmp/$PROJNAME" 2>/dev/null || rm -rf "/tmp/$PROJNAME" 2>/dev/null || true
 }
 
 @test "install from directory" {
