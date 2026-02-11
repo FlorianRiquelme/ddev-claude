@@ -76,15 +76,18 @@ teardown_file() {
 @test ".env file is masked inside claude container" {
   cd "$TESTDIR"
 
-  # Create a .env file with fake secrets on the host
-  echo "SECRET_KEY=super-secret-value-123" > .env
-  echo "DB_PASSWORD=do-not-leak-this" >> .env
+  # Remove any existing .env file and create a new one with fake secrets
+  rm -f .env
+  cat > .env << 'EOF'
+SECRET_KEY=super-secret-value-123
+DB_PASSWORD=do-not-leak-this
+EOF
 
   # Verify the file has content on the host
   [ -s .env ]
   grep -q "SECRET_KEY" .env
 
-  # Inside claude container, .env should be empty
+  # Inside claude container, .env should be empty (masked by empty.env mount)
   run ddev exec -s claude cat "${DDEV_APPROOT}/.env"
   [ "$status" -eq 0 ]
   # Output should be empty or just a comment
@@ -98,15 +101,18 @@ teardown_file() {
 @test ".ddev/.env file is masked inside claude container" {
   cd "$TESTDIR"
 
-  # Create .ddev/.env with DDEV-specific secrets
-  echo "DDEV_ROUTER_HTTP_PORT=8080" > .ddev/.env
-  echo "ADMIN_TOKEN=sensitive-admin-token" >> .ddev/.env
+  # Remove any existing .ddev/.env file and create a new one with DDEV-specific secrets
+  rm -f .ddev/.env
+  cat > .ddev/.env << 'EOF'
+DDEV_ROUTER_HTTP_PORT=8080
+ADMIN_TOKEN=sensitive-admin-token
+EOF
 
   # Verify the file has content on the host
   [ -s .ddev/.env ]
   grep -q "ADMIN_TOKEN" .ddev/.env
 
-  # Inside claude container, .ddev/.env should be empty
+  # Inside claude container, .ddev/.env should be empty (masked by empty.env mount)
   run ddev exec -s claude cat "${DDEV_APPROOT}/.ddev/.env"
   [ "$status" -eq 0 ]
   # Output should be empty or just a comment
@@ -155,7 +161,7 @@ teardown_file() {
   cd "$TESTDIR"
 
   # Lifecycle commands should be blocked with helpful error
-  run ddev exec -s claude ddev restart 2>&1
+  run -127 ddev exec -s claude ddev restart 2>&1
   [ "$status" -eq 127 ]
   [[ "$output" == *"Lifecycle commands must run on the host"* ]]
   [[ "$output" == *"ddev restart"* ]]
@@ -165,7 +171,7 @@ teardown_file() {
   cd "$TESTDIR"
 
   # exec is a lifecycle command and should be blocked
-  run ddev exec -s claude ddev exec -s web php -v 2>&1
+  run -127 ddev exec -s claude ddev exec -s web php -v 2>&1
   [ "$status" -eq 127 ]
   [[ "$output" == *"Lifecycle commands must run on the host"* ]]
   [[ "$output" == *"ddev exec -s web php -v"* ]]
