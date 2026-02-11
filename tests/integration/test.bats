@@ -206,10 +206,16 @@ EOF
 @test "git commit succeeds inside claude container with repo-level config" {
   cd "$TESTDIR"
 
-  # Initialize git repo if not already done
-  if [ ! -d .git ]; then
-    git init
-  fi
+  # Initialize git repo INSIDE the container to avoid permission issues
+  # This ensures the .git directory is owned by the container user
+  run ddev exec -s claude bash -c '
+    cd ${DDEV_APPROOT} && \
+    if [ ! -d .git ]; then
+      git init
+      git config advice.defaultBranchName false
+    fi
+  '
+  [ "$status" -eq 0 ]
 
   # Set up git identity and commit inside the claude container
   # This tests that git operations work with repo-level config
@@ -225,13 +231,13 @@ EOF
   [[ "$output" =~ "Test commit from claude container" ]]
 
   # Verify the commit was created with proper author info
-  run git log -1 --pretty=format:"%an <%ae>"
+  run ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && git log -1 --pretty=format:"%an <%ae>"'
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test User <test@example.com>" ]]
 
   # Cleanup
-  rm -f test-file.txt
-  git reset --hard HEAD~1 2>/dev/null || true
+  ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && rm -f test-file.txt'
+  ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && git reset --hard HEAD~1 2>/dev/null' || true
 }
 
 @test "git commit uses host global config when available" {
@@ -244,10 +250,15 @@ EOF
     skip "Host git not configured globally"
   fi
 
-  # Initialize git repo without local config
-  if [ ! -d .git ]; then
-    git init
-  fi
+  # Initialize git repo INSIDE the container to avoid permission issues
+  run ddev exec -s claude bash -c '
+    cd ${DDEV_APPROOT} && \
+    if [ ! -d .git ]; then
+      git init
+      git config advice.defaultBranchName false
+    fi
+  '
+  [ "$status" -eq 0 ]
 
   # Commit inside container WITHOUT setting repo-level config
   # Should use host global config via mounted ~/.gitconfig
@@ -261,15 +272,15 @@ EOF
   [[ "$output" =~ "Test commit using host config" ]]
 
   # Verify the commit used host identity
-  run git log -1 --pretty=format:"%an"
+  run ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && git log -1 --pretty=format:"%an"'
   [ "$status" -eq 0 ]
   [[ "$output" == "$host_name" ]]
 
-  run git log -1 --pretty=format:"%ae"
+  run ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && git log -1 --pretty=format:"%ae"'
   [ "$status" -eq 0 ]
   [[ "$output" == "$host_email" ]]
 
   # Cleanup
-  rm -f test-file-2.txt
-  git reset --hard HEAD~1 2>/dev/null || true
+  ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && rm -f test-file-2.txt'
+  ddev exec -s claude bash -c 'cd ${DDEV_APPROOT} && git reset --hard HEAD~1 2>/dev/null' || true
 }
