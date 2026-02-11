@@ -14,14 +14,13 @@ quote_args() {
     echo "${joined% }"
 }
 
-is_host_only_subcommand() {
+is_lifecycle_command() {
     local cmd="${1:-}"
     case "$cmd" in
-        # Core lifecycle and project control commands are host-only.
+        # Lifecycle and project control commands - must run on host
         start|stop|restart|poweroff|delete|pause|unpause|config|list|describe|debug|version|\
         launch|auth|snapshot|snapshot-restore|add-on|addon|get|xdebug|share|\
-        import-db|export-db|import-files|export-files|logs|status|help|exec|ssh|\
-        composer|php|node|npm|npx|yarn|pnpm|mysql|mariadb|drush|wp|artisan)
+        import-db|export-db|import-files|export-files|logs|status|help|exec|ssh)
             return 0
             ;;
         *)
@@ -30,43 +29,39 @@ is_host_only_subcommand() {
     esac
 }
 
-hint_host_only() {
-    local forwarded="$1"
+hint_lifecycle() {
+    local subcommand="$1"
+    shift
+    local args="$(quote_args "$@")"
     echo "$LOG_PREFIX ddev is blocked inside the claude container."
-    echo "$LOG_PREFIX This subcommand must run on the host."
+    echo "$LOG_PREFIX Lifecycle commands must run on the host."
     echo "$LOG_PREFIX Suggested command:"
-    if [[ -n "$forwarded" ]]; then
-        echo "$LOG_PREFIX   ddev $forwarded"
+    if [[ -n "$args" ]]; then
+        echo "$LOG_PREFIX   ddev $subcommand $args"
     else
-        echo "$LOG_PREFIX   ddev start"
+        echo "$LOG_PREFIX   ddev $subcommand"
     fi
-}
-
-hint_web_exec() {
-    local forwarded="$1"
-    echo "$LOG_PREFIX ddev is blocked inside the claude container."
-    echo "$LOG_PREFIX Run runtime commands from the host via the web container."
-    echo "$LOG_PREFIX Suggested command:"
-    if [[ -n "$forwarded" ]]; then
-        echo "$LOG_PREFIX   ddev exec -s web $forwarded"
-    else
-        echo "$LOG_PREFIX   ddev exec -s web php -v"
-    fi
-    echo "$LOG_PREFIX For lifecycle commands (start/restart/stop), run ddev on host directly."
 }
 
 main() {
-    local subcommand="${1:-}"
-    local forwarded
-    forwarded="$(quote_args "$@")"
-
-    if [[ -n "$subcommand" ]] && is_host_only_subcommand "$subcommand"; then
-        hint_host_only "$forwarded"
+    if (($# == 0)); then
+        echo "$LOG_PREFIX ddev is blocked inside the claude container."
+        echo "$LOG_PREFIX Run ddev commands from the host."
         exit 127
     fi
 
-    hint_web_exec "$forwarded"
-    exit 127
+    local subcommand="$1"
+    shift
+
+    # Block lifecycle commands - must run on host
+    if is_lifecycle_command "$subcommand"; then
+        hint_lifecycle "$subcommand" "$@"
+        exit 127
+    fi
+
+    # Forward runtime commands to local runtime (php, composer, node, npm, etc.)
+    # If command doesn't exist, exec will fail with "command not found"
+    exec "$subcommand" "$@"
 }
 
 main "$@"

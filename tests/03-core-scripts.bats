@@ -121,21 +121,41 @@ EOF
   [[ "$output" == *".env"* ]]
 }
 
-@test "ddev shim points runtime commands to web container" {
-  status=0
-  output="$(bash "$REPO_ROOT/claude/bin/ddev" uname -a 2>&1)" || status=$?
+@test "ddev shim forwards runtime commands (php)" {
+  run bash "$REPO_ROOT/claude/bin/ddev" php --version
 
-  [ "$status" -eq 127 ]
-  [[ "$output" == *"ddev is blocked inside the claude container"* ]]
-  [[ "$output" == *"ddev exec -s web uname -a"* ]]
-  [[ "$output" == *"For lifecycle commands (start/restart/stop), run ddev on host directly."* ]]
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"PHP"* ]]
 }
 
-@test "ddev shim points host-only subcommands to host ddev" {
+@test "ddev shim forwards runtime commands (node)" {
+  run bash "$REPO_ROOT/claude/bin/ddev" node --version
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"v"* ]]
+}
+
+@test "ddev shim forwards runtime commands (composer)" {
+  run bash "$REPO_ROOT/claude/bin/ddev" composer --version
+
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Composer"* ]]
+}
+
+@test "ddev shim blocks lifecycle commands (restart)" {
   status=0
   output="$(bash "$REPO_ROOT/claude/bin/ddev" restart 2>&1)" || status=$?
 
   [ "$status" -eq 127 ]
-  [[ "$output" == *"This subcommand must run on the host."* ]]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
   [[ "$output" == *"ddev restart"* ]]
+}
+
+@test "ddev shim blocks lifecycle commands (exec)" {
+  status=0
+  output="$(bash "$REPO_ROOT/claude/bin/ddev" exec -s web php -v 2>&1)" || status=$?
+
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
+  [[ "$output" == *"ddev exec -s web php -v"* ]]
 }

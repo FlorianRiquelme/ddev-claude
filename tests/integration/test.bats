@@ -72,3 +72,110 @@ teardown_file() {
   # Verify output looks like an IP address
   [[ "$output" =~ ^[0-9]+\.[0-9]+ ]]
 }
+
+@test ".env file is masked inside claude container" {
+  cd "$TESTDIR"
+
+  # Create a .env file with fake secrets on the host
+  echo "SECRET_KEY=super-secret-value-123" > .env
+  echo "DB_PASSWORD=do-not-leak-this" >> .env
+
+  # Verify the file has content on the host
+  [ -s .env ]
+  grep -q "SECRET_KEY" .env
+
+  # Inside claude container, .env should be empty
+  run ddev exec -s claude cat "${DDEV_APPROOT}/.env"
+  [ "$status" -eq 0 ]
+  # Output should be empty or just a comment
+  [[ "$output" == "" || "$output" == *"intentionally empty"* ]]
+
+  # Verify secrets are NOT visible inside container
+  run ddev exec -s claude grep -q "SECRET_KEY" "${DDEV_APPROOT}/.env" 2>&1
+  [ "$status" -ne 0 ]
+}
+
+@test ".ddev/.env file is masked inside claude container" {
+  cd "$TESTDIR"
+
+  # Create .ddev/.env with DDEV-specific secrets
+  echo "DDEV_ROUTER_HTTP_PORT=8080" > .ddev/.env
+  echo "ADMIN_TOKEN=sensitive-admin-token" >> .ddev/.env
+
+  # Verify the file has content on the host
+  [ -s .ddev/.env ]
+  grep -q "ADMIN_TOKEN" .ddev/.env
+
+  # Inside claude container, .ddev/.env should be empty
+  run ddev exec -s claude cat "${DDEV_APPROOT}/.ddev/.env"
+  [ "$status" -eq 0 ]
+  # Output should be empty or just a comment
+  [[ "$output" == "" || "$output" == *"intentionally empty"* ]]
+
+  # Verify secrets are NOT visible inside container
+  run ddev exec -s claude grep -q "ADMIN_TOKEN" "${DDEV_APPROOT}/.ddev/.env" 2>&1
+  [ "$status" -ne 0 ]
+}
+
+@test "ddev shim forwards runtime command: php" {
+  cd "$TESTDIR"
+
+  # Runtime commands should be forwarded and execute successfully
+  run ddev exec -s claude ddev php --version
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"PHP"* ]]
+}
+
+@test "ddev shim forwards runtime command: composer" {
+  cd "$TESTDIR"
+
+  run ddev exec -s claude ddev composer --version
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"Composer"* ]]
+}
+
+@test "ddev shim forwards runtime command: node" {
+  cd "$TESTDIR"
+
+  run ddev exec -s claude ddev node --version
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"v"* ]]
+}
+
+@test "ddev shim forwards runtime command: npm" {
+  cd "$TESTDIR"
+
+  run ddev exec -s claude ddev npm --version
+  [ "$status" -eq 0 ]
+  # npm version output is just the version number
+  [[ "$output" =~ ^[0-9]+\.[0-9]+ ]]
+}
+
+@test "ddev lifecycle commands are blocked: restart" {
+  cd "$TESTDIR"
+
+  # Lifecycle commands should be blocked with helpful error
+  run ddev exec -s claude ddev restart 2>&1
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
+  [[ "$output" == *"ddev restart"* ]]
+}
+
+@test "ddev lifecycle commands are blocked: exec" {
+  cd "$TESTDIR"
+
+  # exec is a lifecycle command and should be blocked
+  run ddev exec -s claude ddev exec -s web php -v 2>&1
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"Lifecycle commands must run on the host"* ]]
+  [[ "$output" == *"ddev exec -s web php -v"* ]]
+}
+
+@test "ddev shim is in PATH inside claude container" {
+  cd "$TESTDIR"
+
+  # Verify ddev command exists and is our shim
+  run ddev exec -s claude which ddev
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"/usr/local/bin/ddev"* ]]
+}
