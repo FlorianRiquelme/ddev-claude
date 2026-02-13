@@ -223,41 +223,41 @@ EOF
   cd "$TESTDIR"
 
   # Check if git repo exists, if not initialize it
-  run ddev exec -s claude test -d '$DDEV_APPROOT/.git'
+  run ddev exec -s claude test -d .git
   if [ "$status" -ne 0 ]; then
-    run ddev exec -s claude git -C '$DDEV_APPROOT' init
+    run ddev exec -s claude git init
     [ "$status" -eq 0 ]
-    run ddev exec -s claude git -C '$DDEV_APPROOT' config advice.defaultBranchName false
+    run ddev exec -s claude git config advice.defaultBranchName false
   fi
 
   # Set up git identity inside the container
-  run ddev exec -s claude git -C '$DDEV_APPROOT' config user.name "Test User"
+  run ddev exec -s claude git config user.name "Test User"
   [ "$status" -eq 0 ]
 
-  run ddev exec -s claude git -C '$DDEV_APPROOT' config user.email "test@example.com"
+  run ddev exec -s claude git config user.email "test@example.com"
   [ "$status" -eq 0 ]
 
   # Create a test file
-  run ddev exec -s claude bash -c 'echo "test content" > $DDEV_APPROOT/test-file.txt'
+  run ddev exec -s claude bash -c 'echo "test content" > test-file.txt'
   [ "$status" -eq 0 ]
 
   # Add the file
-  run ddev exec -s claude git -C '$DDEV_APPROOT' add test-file.txt
+  run ddev exec -s claude git add test-file.txt
   [ "$status" -eq 0 ]
 
   # Commit the file
-  run ddev exec -s claude git -C '$DDEV_APPROOT' commit -m "Test commit from claude container"
+  run ddev exec -s claude git commit -m "Test commit from claude container"
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test commit from claude container" ]]
 
   # Verify the commit was created with proper author info
-  run ddev exec -s claude git -C '$DDEV_APPROOT' log -1 --pretty=format:"%an <%ae>"
+  run ddev exec -s claude git log -1 --pretty=format:"%an <%ae>"
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test User <test@example.com>" ]]
 
   # Cleanup
-  ddev exec -s claude rm -f '$DDEV_APPROOT/test-file.txt' || true
-  ddev exec -s claude git -C '$DDEV_APPROOT' reset --hard HEAD~1 2>/dev/null || true
+  ddev exec -s claude rm -f test-file.txt || true
+  ddev exec -s claude git reset --hard HEAD~1 2>/dev/null || true
 }
 
 @test "git commit uses host global config when available" {
@@ -271,35 +271,35 @@ EOF
   fi
 
   # Check if git repo exists, if not initialize it
-  run ddev exec -s claude test -d '$DDEV_APPROOT/.git'
+  run ddev exec -s claude test -d .git
   if [ "$status" -ne 0 ]; then
-    run ddev exec -s claude git -C '$DDEV_APPROOT' init
+    run ddev exec -s claude git init
     [ "$status" -eq 0 ]
-    run ddev exec -s claude git -C '$DDEV_APPROOT' config advice.defaultBranchName false
+    run ddev exec -s claude git config advice.defaultBranchName false
   fi
 
   # Commit inside container WITHOUT setting repo-level config
   # Should use host global config via mounted ~/.gitconfig
-  run ddev exec -s claude bash -c 'echo "test content 2" > $DDEV_APPROOT/test-file-2.txt'
+  run ddev exec -s claude bash -c 'echo "test content 2" > test-file-2.txt'
   [ "$status" -eq 0 ]
 
-  run ddev exec -s claude git -C '$DDEV_APPROOT' add test-file-2.txt
+  run ddev exec -s claude git add test-file-2.txt
   [ "$status" -eq 0 ]
 
-  run ddev exec -s claude git -C '$DDEV_APPROOT' commit -m "Test commit using host config"
+  run ddev exec -s claude git commit -m "Test commit using host config"
   [ "$status" -eq 0 ]
   [[ "$output" =~ "Test commit using host config" ]]
 
   # Verify the commit used host identity
-  run ddev exec -s claude git -C '$DDEV_APPROOT' log -1 --pretty=format:"%an"
+  run ddev exec -s claude git log -1 --pretty=format:"%an"
   [ "$status" -eq 0 ]
   [[ "$output" == "$host_name" ]]
 
-  run ddev exec -s claude git -C '$DDEV_APPROOT' log -1 --pretty=format:"%ae"
+  run ddev exec -s claude git log -1 --pretty=format:"%ae"
   [ "$status" -eq 0 ]
   [[ "$output" == "$host_email" ]]
 
   # Cleanup
-  ddev exec -s claude rm -f '$DDEV_APPROOT/test-file-2.txt' || true
-  ddev exec -s claude git -C '$DDEV_APPROOT' reset --hard HEAD~1 2>/dev/null || true
+  ddev exec -s claude rm -f test-file-2.txt || true
+  ddev exec -s claude git reset --hard HEAD~1 2>/dev/null || true
 }
