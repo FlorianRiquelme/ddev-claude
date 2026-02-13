@@ -1,0 +1,12 @@
+# Exclude dev-only files from release tarballs (ddev get)
+.ddev/                export-ignore
+.github/              export-ignore
+.gitignore            export-ignore
+.idea/                export-ignore
+.planning/            export-ignore
+CLAUDE.md             export-ignore
+Makefile              export-ignore
+docs/                 export-ignore
+instincts/            export-ignore
+sandbox/              export-ignore
+tests/                export-ignore
