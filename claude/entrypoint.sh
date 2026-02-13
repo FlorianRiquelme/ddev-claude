@@ -139,9 +139,9 @@ log "Initializing secret file protection..."
 # Configure git safe.directory for the mounted project.
 # The project dir is bind-mounted from host and may be owned by a different uid than root.
 # Git >= 2.35.2 rejects operations in repos owned by other users.
+# Use --system (/etc/gitconfig) because ~/.gitconfig is mounted read-only from host.
 log "Configuring git safe.directory for ${DDEV_APPROOT}..."
-git config --global --add safe.directory "${DDEV_APPROOT}"
-su -c "git config --global --add safe.directory '${DDEV_APPROOT}'" claude 2>/dev/null || true
+git config --system --add safe.directory "${DDEV_APPROOT}"
 
 # Start config file watcher in background
 log "Starting config file watcher..."
