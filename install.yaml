@@ -12,6 +12,10 @@ pre_install_actions:
     #ddev-description:Ensuring Claude CLI state file exists for bind mount
     [ -f ~/.claude.json ] || echo '{}' > ~/.claude.json
   - |
+    #ddev-description:Ensuring Git config paths exist for bind mounts
+    [ -f ~/.gitconfig ] || touch ~/.gitconfig
+    mkdir -p ~/.config/git
+  - |
     #ddev-description:Cleaning up previous addon files for upgrade
     rm -rf .ddev/claude .ddev/commands/host/claude .ddev/commands/host/claude-whitelist
 

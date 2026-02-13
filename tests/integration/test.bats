@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 # Integration tests for ddev-claude addon.
 # Requires a real DDEV environment — run via CI with ddev/github-action-add-on-test@v2
 # or locally with: bats tests/integration/test.bats
@@ -9,6 +11,14 @@
 
 PROJNAME="ddev-claude-test"
 TESTDIR="/tmp/$PROJNAME"
+
+# Helper: assert last `run` command succeeded; prints output on failure.
+assert_success() {
+  if [ "$status" -ne 0 ]; then
+    echo "FAILED (status=$status): $output" >&2
+    return 1
+  fi
+}
 
 setup() {
   set -eu -o pipefail
@@ -184,4 +194,122 @@ EOF
   run ddev exec -s claude which ddev
   [ "$status" -eq 0 ]
   [[ "$output" == *"/usr/local/bin/ddev"* ]]
+}
+
+@test "git config files are mounted inside claude container" {
+  cd "$TESTDIR"
+
+  # Verify git config file paths are mounted (even if empty)
+  run ddev exec -s claude test -f /root/.gitconfig
+  [ "$status" -eq 0 ]
+
+  run ddev exec -s claude test -d /root/.config/git
+  [ "$status" -eq 0 ]
+
+  run ddev exec -s claude test -f /home/claude/.gitconfig
+  [ "$status" -eq 0 ]
+
+  run ddev exec -s claude test -d /home/claude/.config/git
+  [ "$status" -eq 0 ]
+}
+
+@test "check which user runs commands in claude container" {
+  cd "$TESTDIR"
+
+  # Debug: Check which user is actually running commands
+  run ddev exec -s claude whoami
+  echo "Current user: $output"
+
+  run ddev exec -s claude id
+  echo "User ID info: $output"
+
+  # Check git version to ensure it's installed
+  run ddev exec -s claude git --version
+  [ "$status" -eq 0 ]
+  echo "Git version: $output"
+}
+
+@test "git commit succeeds inside claude container with repo-level config" {
+  cd "$TESTDIR"
+
+  # Check if git repo exists, if not initialize it
+  run ddev exec -s claude test -d .git
+  if [ "$status" -ne 0 ]; then
+    run ddev exec -s claude git init
+    assert_success
+    run ddev exec -s claude git config advice.defaultBranchName false
+  fi
+
+  # Set up git identity inside the container
+  run ddev exec -s claude git config user.name "Test User"
+  assert_success
+
+  run ddev exec -s claude git config user.email "test@example.com"
+  assert_success
+
+  # Create a test file
+  run ddev exec -s claude bash -c 'echo "test content" > test-file.txt'
+  assert_success
+
+  # Add the file
+  run ddev exec -s claude git add test-file.txt
+  assert_success
+
+  # Commit the file
+  run ddev exec -s claude git commit -m "Test commit from claude container"
+  assert_success
+  [[ "$output" =~ "Test commit from claude container" ]]
+
+  # Verify the commit was created with proper author info
+  run ddev exec -s claude git log -1 --pretty=format:"%an <%ae>"
+  assert_success
+  [[ "$output" =~ "Test User <test@example.com>" ]]
+
+  # Cleanup
+  ddev exec -s claude rm -f test-file.txt || true
+  ddev exec -s claude git reset --hard HEAD~1 2>/dev/null || true
+}
+
+@test "git commit uses host global config when available" {
+  cd "$TESTDIR"
+
+  # Skip if host doesn't have git configured globally
+  host_name=$(git config --global user.name 2>/dev/null || echo "")
+  host_email=$(git config --global user.email 2>/dev/null || echo "")
+  if [ -z "$host_name" ] || [ -z "$host_email" ]; then
+    skip "Host git not configured globally"
+  fi
+
+  # Check if git repo exists, if not initialize it
+  run ddev exec -s claude test -d .git
+  if [ "$status" -ne 0 ]; then
+    run ddev exec -s claude git init
+    assert_success
+    run ddev exec -s claude git config advice.defaultBranchName false
+  fi
+
+  # Commit inside container WITHOUT setting repo-level config
+  # Should use host global config via mounted ~/.gitconfig
+  run ddev exec -s claude bash -c 'echo "test content 2" > test-file-2.txt'
+  assert_success
+
+  run ddev exec -s claude git add test-file-2.txt
+  assert_success
+
+  run ddev exec -s claude git commit -m "Test commit using host config"
+  assert_success
+  [[ "$output" =~ "Test commit using host config" ]]
+
+  # Verify the commit used host identity
+  run ddev exec -s claude git log -1 --pretty=format:"%an"
+  assert_success
+  [[ "$output" == "$host_name" ]]
+
+  run ddev exec -s claude git log -1 --pretty=format:"%ae"
+  assert_success
+  [[ "$output" == "$host_email" ]]
+
+  # Cleanup
+  ddev exec -s claude rm -f test-file-2.txt || true
+  ddev exec -s claude git reset --hard HEAD~1 2>/dev/null || true
 }

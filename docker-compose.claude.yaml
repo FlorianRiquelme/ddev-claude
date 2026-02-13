@@ -33,6 +33,11 @@ services:
       - ~/.claude.json:/home/claude/.claude.json:rw
       # Keep host-absolute plugin install paths valid inside container
       - ${HOME}/.claude:${HOME}/.claude:rw
+      # Git identity for commits inside container
+      - ~/.gitconfig:/root/.gitconfig:ro
+      - ~/.config/git:/root/.config/git:ro
+      - ~/.gitconfig:/home/claude/.gitconfig:ro
+      - ~/.config/git:/home/claude/.config/git:ro
 
     working_dir: ${DDEV_APPROOT}
 
