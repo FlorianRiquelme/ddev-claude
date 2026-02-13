@@ -23,6 +23,11 @@ EOF
     chmod +x "$DDEV_APPROOT/.ddev/claude/scripts/$s"
   done
 
+  mock_cmd git <<'EOF'
+#!/usr/bin/env bash
+echo "$*" >> /tmp/entrypoint-git.log
+exit 0
+EOF
   mock_cmd iptables <<'EOF'
 #!/usr/bin/env bash
 echo "$*" >> /tmp/entrypoint-iptables.log
