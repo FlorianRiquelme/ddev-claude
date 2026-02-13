@@ -1,4 +1,4 @@
-.PHONY: help test test-unit test-integration sandbox sandbox-reinstall sandbox-teardown lint
+.PHONY: help test test-unit test-integration test-integration-ci sandbox sandbox-reinstall sandbox-teardown lint
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-22s\033[0m %s\n", $$1, $$2}'
@@ -14,6 +14,18 @@ test-unit: ## Run unit tests (no DDEV required)
 
 test-integration: ## Run integration tests (requires DDEV running)
 	bats tests/integration
+
+test-integration-ci: ## Run integration tests simulating CI conditions (no global gitconfig)
+	@echo "Simulating CI: temporarily removing ~/.gitconfig..."
+	@if [ -f "$$HOME/.gitconfig" ]; then \
+		cp "$$HOME/.gitconfig" "$$HOME/.gitconfig.bak.ddev-claude-test"; \
+		rm -f "$$HOME/.gitconfig"; \
+		trap 'mv "$$HOME/.gitconfig.bak.ddev-claude-test" "$$HOME/.gitconfig" 2>/dev/null; echo "Restored ~/.gitconfig"' EXIT; \
+		bats tests/integration; \
+	else \
+		echo "No ~/.gitconfig found, running tests as-is..."; \
+		bats tests/integration; \
+	fi
 
 # ---------------------------------------------------------------------------
 # Sandbox (local dev environment)

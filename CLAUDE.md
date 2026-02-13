@@ -66,6 +66,18 @@ Stack templates in `claude/config/stack-templates/` (laravel.json, npm.json).
 - **DDEV marker:** Files managed by DDEV start with `#ddev-generated` comment.
 - **JSON whitelist format:** Simple arrays: `["domain1.com", "domain2.com"]`. Validated with `jq empty`.
 - **Error handling:** Entrypoint uses `trap ... ERR` to fail closed if firewall setup fails.
+- **Test naming:** Bats test files are numbered: `tests/XX-<component>.bats` (e.g., `01-firewall.bats`).
+
+## File Coupling
+
+When modifying these files, expect to update their counterparts in the same commit:
+
+- `entrypoint.sh` ↔ `resolve-and-apply.sh` (firewall init and domain resolution)
+- `docker-compose.claude.yaml` ↔ `install.yaml` (service definition and addon manifest)
+- `claude/scripts/*.sh` ↔ `tests/*-<matching-component>.bats` (scripts and their tests)
+- `Dockerfile.claude` ↔ `entrypoint.sh` or scripts (new packages need wiring)
+- `commands/host/*` ↔ `claude/scripts/*` (host commands often pair with container scripts)
+- Whitelist JSON configs ↔ corresponding whitelist `.bats` tests
 
 ## Project Planning
 

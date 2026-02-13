@@ -3,6 +3,12 @@ name: tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Enable tmate SSH debugging'
+        default: false
 
 jobs:
   unit:
@@ -30,3 +36,4 @@ jobs:
           addon_repository: ${{ github.repository }}
           addon_ref: ${{ github.ref }}
           test_command: bats tests/integration
+          debug_enabled: ${{ github.event.inputs.debug_enabled || false }}

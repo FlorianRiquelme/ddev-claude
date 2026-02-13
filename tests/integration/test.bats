@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 # Integration tests for ddev-claude addon.
 # Requires a real DDEV environment — run via CI with ddev/github-action-add-on-test@v2
 # or locally with: bats tests/integration/test.bats
@@ -9,6 +11,14 @@
 
 PROJNAME="ddev-claude-test"
 TESTDIR="/tmp/$PROJNAME"
+
+# Helper: assert last `run` command succeeded; prints output on failure.
+assert_success() {
+  if [ "$status" -ne 0 ]; then
+    echo "FAILED (status=$status): $output" >&2
+    return 1
+  fi
+}
 
 setup() {
   set -eu -o pipefail
@@ -226,33 +236,33 @@ EOF
   run ddev exec -s claude test -d .git
   if [ "$status" -ne 0 ]; then
     run ddev exec -s claude git init
-    [ "$status" -eq 0 ]
+    assert_success
     run ddev exec -s claude git config advice.defaultBranchName false
   fi
 
   # Set up git identity inside the container
   run ddev exec -s claude git config user.name "Test User"
-  [ "$status" -eq 0 ]
+  assert_success
 
   run ddev exec -s claude git config user.email "test@example.com"
-  [ "$status" -eq 0 ]
+  assert_success
 
   # Create a test file
   run ddev exec -s claude bash -c 'echo "test content" > test-file.txt'
-  [ "$status" -eq 0 ]
+  assert_success
 
   # Add the file
   run ddev exec -s claude git add test-file.txt
-  [ "$status" -eq 0 ]
+  assert_success
 
   # Commit the file
   run ddev exec -s claude git commit -m "Test commit from claude container"
-  [ "$status" -eq 0 ]
+  assert_success
   [[ "$output" =~ "Test commit from claude container" ]]
 
   # Verify the commit was created with proper author info
   run ddev exec -s claude git log -1 --pretty=format:"%an <%ae>"
-  [ "$status" -eq 0 ]
+  assert_success
   [[ "$output" =~ "Test User <test@example.com>" ]]
 
   # Cleanup
@@ -274,29 +284,29 @@ EOF
   run ddev exec -s claude test -d .git
   if [ "$status" -ne 0 ]; then
     run ddev exec -s claude git init
-    [ "$status" -eq 0 ]
+    assert_success
     run ddev exec -s claude git config advice.defaultBranchName false
   fi
 
   # Commit inside container WITHOUT setting repo-level config
   # Should use host global config via mounted ~/.gitconfig
   run ddev exec -s claude bash -c 'echo "test content 2" > test-file-2.txt'
-  [ "$status" -eq 0 ]
+  assert_success
 
   run ddev exec -s claude git add test-file-2.txt
-  [ "$status" -eq 0 ]
+  assert_success
 
   run ddev exec -s claude git commit -m "Test commit using host config"
-  [ "$status" -eq 0 ]
+  assert_success
   [[ "$output" =~ "Test commit using host config" ]]
 
   # Verify the commit used host identity
   run ddev exec -s claude git log -1 --pretty=format:"%an"
-  [ "$status" -eq 0 ]
+  assert_success
   [[ "$output" == "$host_name" ]]
 
   run ddev exec -s claude git log -1 --pretty=format:"%ae"
-  [ "$status" -eq 0 ]
+  assert_success
   [[ "$output" == "$host_email" ]]
 
   # Cleanup
